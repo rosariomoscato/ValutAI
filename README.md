@@ -13,7 +13,7 @@ ValutAI è una web application che aiuta le piccole e medie imprese italiane a p
 - **Raccomandazioni Pratiche**: Genera report con suggerimenti concreti per migliorare il tasso di successo
 - **Ottimizzazione Tempo**: Riduce il tempo speso su opportunità a bassa probabilità
 
-## 💡 Benefizi
+## 💡 Benefici
 
 ### Per le PMI
 - **Aumento del Win Rate**: Migliora le percentuali di successo del 20-30% in 4-8 settimane
