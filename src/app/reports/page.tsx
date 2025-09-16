@@ -139,7 +139,7 @@ export default function ReportsPage() {
                 </div>
               ))}
               <p className="text-sm text-gray-500 text-center mt-4">
-                Le analisi saranno disponibili dopo l'addestramento
+                Le analisi saranno disponibili dopo l&apos;addestramento
               </p>
             </div>
           </CardContent>
@@ -189,7 +189,7 @@ export default function ReportsPage() {
       {/* Action Items */}
       <Card>
         <CardHeader>
-          <CardTitle>Piano d'Azione</CardTitle>
+          <CardTitle>Piano d&apos;Azione</CardTitle>
           <CardDescription>
             Raccomandazioni concrete per migliorare il tasso di successo
           </CardDescription>

@@ -53,7 +53,7 @@ export default function SettingsPage() {
             Profilo Utente
           </CardTitle>
           <CardDescription>
-            Informazioni personali e dettagli dell'account
+            Informazioni personali e dettagli dell&apos;account
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -74,7 +74,7 @@ export default function SettingsPage() {
               <div>
                 <label className="text-sm font-medium mb-2 block">Ruolo</label>
                 <div className="border rounded-md px-3 py-2 bg-gray-50 dark:bg-gray-800 capitalize">
-                  {((session.user as any).role || "viewer")}
+                  {((session.user as { role?: string }).role || "viewer")}
                 </div>
               </div>
               <div>
@@ -212,7 +212,7 @@ export default function SettingsPage() {
       </Card>
 
       {/* Team Management (solo per owner) */}
-      {(session.user as any).role === "owner" && (
+      {(session.user as { role?: string }).role === "owner" && (
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
@@ -282,7 +282,7 @@ export default function SettingsPage() {
               <div>
                 <h4 className="font-medium text-red-800 dark:text-red-200">Resetta Dati</h4>
                 <p className="text-sm text-red-600 dark:text-red-400">
-                  Cancella tutti i dati ma mantieni l'account
+                  Cancella tutti i dati ma mantieni l&apos;account
                 </p>
               </div>
               <Button variant="outline" className="border-red-300 text-red-700 hover:bg-red-100" size="sm">

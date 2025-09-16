@@ -1,10 +1,21 @@
 "use client";
 
 import { useSession } from "@/lib/auth-client";
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Lock, Upload, FileSpreadsheet, Database, CheckCircle, Upload as UploadIcon, AlertCircle, CheckCircle2 } from "lucide-react";
+import { Lock, Upload, FileSpreadsheet, Database, CheckCircle, Upload as UploadIcon, AlertCircle, CheckCircle2, Calendar, FileText } from "lucide-react";
+
+interface Dataset {
+  id: string;
+  name: string;
+  fileName: string;
+  fileSize: number;
+  recordCount: number;
+  status: string;
+  createdAt: string;
+  updatedAt: string;
+}
 
 export default function DataPage() {
   const { data: session, isPending } = useSession();
@@ -13,7 +24,31 @@ export default function DataPage() {
   const [isUploading, setIsUploading] = useState(false);
   const [uploadStatus, setUploadStatus] = useState<'idle' | 'uploading' | 'success' | 'error'>('idle');
   const [uploadMessage, setUploadMessage] = useState('');
+  const [datasets, setDatasets] = useState<Dataset[]>([]);
+  const [isLoadingDatasets, setIsLoadingDatasets] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // Carica i dataset quando la pagina viene caricata
+  useEffect(() => {
+    if (session) {
+      loadDatasets();
+    }
+  }, [session]);
+
+  const loadDatasets = async () => {
+    setIsLoadingDatasets(true);
+    try {
+      const response = await fetch('/api/datasets');
+      if (response.ok) {
+        const data = await response.json();
+        setDatasets(data.datasets || []);
+      }
+    } catch (error) {
+      console.error('Error loading datasets:', error);
+    } finally {
+      setIsLoadingDatasets(false);
+    }
+  };
 
   const handleFileSelect = (file: File) => {
     setSelectedFile(file);
@@ -34,22 +69,33 @@ export default function DataPage() {
     setUploadMessage('Caricamento in corso...');
 
     try {
-      // Simula l'elaborazione del file
-      await new Promise(resolve => setTimeout(resolve, 2000));
+      const formData = new FormData();
+      formData.append('file', selectedFile);
 
-      // Simula la lettura del file
-      const fileContent = await readFileContent(selectedFile);
-      console.log('Contenuto del file:', fileContent);
+      const response = await fetch('/api/upload', {
+        method: 'POST',
+        body: formData,
+      });
 
-      setUploadStatus('success');
-      setUploadMessage(`File "${selectedFile.name}" caricato con successo! Processati ${fileContent.length} righe.`);
-      
-      // Resetta il file selezionato dopo l'upload riuscito
-      setTimeout(() => {
-        setSelectedFile(null);
-        setUploadStatus('idle');
-        setUploadMessage('');
-      }, 3000);
+      const result = await response.json();
+
+      if (response.ok) {
+        setUploadStatus('success');
+        setUploadMessage(`${result.message}`);
+        
+        // Ricarica i dataset
+        await loadDatasets();
+        
+        // Resetta il file selezionato dopo l'upload riuscito
+        setTimeout(() => {
+          setSelectedFile(null);
+          setUploadStatus('idle');
+          setUploadMessage('');
+        }, 3000);
+      } else {
+        setUploadStatus('error');
+        setUploadMessage(`Errore: ${result.error}`);
+      }
 
     } catch (error) {
       setUploadStatus('error');
@@ -59,38 +105,63 @@ export default function DataPage() {
     }
   };
 
-  const readFileContent = (file: File): Promise<Record<string, string>[]> => {
-    return new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        try {
-          const text = e.target?.result as string;
-          const lines = text.split('\n').filter(line => line.trim());
-          const headers = lines[0].split(',').map(h => h.trim());
-          const data = lines.slice(1).map(line => {
-            const values = line.split(',').map(v => v.trim().replace(/^"|"$/g, ''));
-            const row: Record<string, string> = {};
-            headers.forEach((header, index) => {
-              row[header] = values[index] || '';
-            });
-            return row;
-          });
-          resolve(data);
-        } catch {
-          reject(new Error('Formato file non valido'));
-        }
-      };
-      reader.onerror = () => reject(new Error('Errore nella lettura del file'));
-      reader.readAsText(file);
-    });
-  };
-
+  
   const resetUpload = () => {
     setSelectedFile(null);
     setUploadStatus('idle');
     setUploadMessage('');
     if (fileInputRef.current) {
       fileInputRef.current.value = '';
+    }
+  };
+
+  const formatDate = (dateString: string) => {
+    return new Date(dateString).toLocaleDateString('it-IT', {
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    });
+  };
+
+  const formatFileSize = (bytes: number) => {
+    if (bytes === 0) return '0 Bytes';
+    const k = 1024;
+    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+  };
+
+  const getStatusBadge = (status: string) => {
+    switch (status) {
+      case 'ready':
+        return (
+          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200">
+            <CheckCircle className="w-3 h-3 mr-1" />
+            Pronto
+          </span>
+        );
+      case 'processing':
+        return (
+          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200">
+            <UploadIcon className="w-3 h-3 mr-1 animate-spin" />
+            In elaborazione
+          </span>
+        );
+      case 'error':
+        return (
+          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200">
+            <AlertCircle className="w-3 h-3 mr-1" />
+            Errore
+          </span>
+        );
+      default:
+        return (
+          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200">
+            Sconosciuto
+          </span>
+        );
     }
   };
 
@@ -386,18 +457,61 @@ QT-002,Edilizio,Grande,89500,8,60,Telefono,Laura Bianchi,Fiera,perso,2024-01-08,
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="text-center py-12">
-            <FileSpreadsheet className="mx-auto h-12 w-12 text-gray-400 mb-4" />
-            <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100 mb-2">
-              Nessun dataset caricato
-            </h3>
-            <p className="text-gray-500 dark:text-gray-400 mb-4">
-              Carica il tuo primo dataset per iniziare a utilizzare ValutAI
-            </p>
-            <Button onClick={openFileDialog}>
-              Carica Dataset
-            </Button>
-          </div>
+          {isLoadingDatasets ? (
+            <div className="flex justify-center py-12">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+            </div>
+          ) : datasets.length === 0 ? (
+            <div className="text-center py-12">
+              <FileSpreadsheet className="mx-auto h-12 w-12 text-gray-400 mb-4" />
+              <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100 mb-2">
+                Nessun dataset caricato
+              </h3>
+              <p className="text-gray-500 dark:text-gray-400 mb-4">
+                Carica il tuo primo dataset per iniziare a utilizzare ValutAI
+              </p>
+              <Button onClick={openFileDialog}>
+                Carica Dataset
+              </Button>
+            </div>
+          ) : (
+            <div className="space-y-4">
+              {datasets.map((dataset) => (
+                <div key={dataset.id} className="border rounded-lg p-4 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <FileText className="h-8 w-8 text-blue-500" />
+                      <div>
+                        <h4 className="font-medium">{dataset.name}</h4>
+                        <p className="text-sm text-gray-500 dark:text-gray-400">
+                          {dataset.fileName} • {formatFileSize(dataset.fileSize)}
+                        </p>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      {getStatusBadge(dataset.status)}
+                      <div className="text-right text-sm text-gray-500 dark:text-gray-400">
+                        <div className="flex items-center gap-1">
+                          <Calendar className="h-3 w-3" />
+                          {formatDate(dataset.createdAt)}
+                        </div>
+                        <div className="mt-1">
+                          {dataset.recordCount} record
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  {dataset.updatedAt && (
+                    <div className="mt-3 pt-3 border-t border-gray-200 dark:border-gray-700">
+                      <p className="text-xs text-gray-500 dark:text-gray-400">
+                        Aggiornato il {formatDate(dataset.updatedAt)}
+                      </p>
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+          )}
         </CardContent>
       </Card>
 
