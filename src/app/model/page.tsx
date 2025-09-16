@@ -2,9 +2,10 @@
 
 import { useSession } from "@/lib/auth-client";
 import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Lock, Brain, Play, Settings, TrendingUp, CheckCircle, Clock } from "lucide-react";
+import { Lock, Brain, Play, Settings, TrendingUp, CheckCircle, Clock, Trash2, BarChart3 } from "lucide-react";
 
 interface Dataset {
   id: string;
@@ -15,9 +16,34 @@ interface Dataset {
   createdAt: string;
 }
 
+interface Model {
+  id: string;
+  name: string;
+  algorithm: string;
+  status: string;
+  metrics: {
+    aucRoc: number;
+    accuracy: number;
+    precision: number;
+    recall: number;
+    trainingSize: number;
+    validationSize: number;
+  };
+  featureImportance: Array<{
+    name: string;
+    importance: number;
+  }>;
+  createdAt: string;
+  updatedAt: string;
+  datasetName: string;
+  datasetId: string;
+}
+
 export default function ModelPage() {
+  const router = useRouter();
   const { data: session, isPending } = useSession();
   const [datasets, setDatasets] = useState<Dataset[]>([]);
+  const [models, setModels] = useState<Model[]>([]);
   const [selectedDataset, setSelectedDataset] = useState<string>('');
   const [isTraining, setIsTraining] = useState(false);
   const [trainingStatus, setTrainingStatus] = useState<'idle' | 'training' | 'success' | 'error'>('idle');
@@ -26,6 +52,7 @@ export default function ModelPage() {
   useEffect(() => {
     if (session) {
       loadDatasets();
+      loadModels();
     }
   }, [session]);
 
@@ -41,6 +68,18 @@ export default function ModelPage() {
     }
   };
 
+  const loadModels = async () => {
+    try {
+      const response = await fetch('/api/models');
+      if (response.ok) {
+        const data = await response.json();
+        setModels(data.models || []);
+      }
+    } catch (error) {
+      console.error('Error loading models:', error);
+    }
+  };
+
   const handleTrainModel = async () => {
     if (!selectedDataset) {
       setTrainingStatus('error');
@@ -53,16 +92,34 @@ export default function ModelPage() {
     setTrainingMessage('Addestramento del modello in corso...');
 
     try {
-      // Simula l'addestramento del modello
-      await new Promise(resolve => setTimeout(resolve, 5000));
+      const response = await fetch('/api/train', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          datasetId: selectedDataset,
+          algorithm: 'logistic_regression',
+        }),
+      });
 
-      setTrainingStatus('success');
-      setTrainingMessage('Modello addestrato con successo! AUC-ROC: 0.82, Accuracy: 0.78');
-      
-      setTimeout(() => {
-        setTrainingStatus('idle');
-        setTrainingMessage('');
-      }, 5000);
+      const result = await response.json();
+
+      if (response.ok) {
+        setTrainingStatus('success');
+        setTrainingMessage(`Modello addestrato con successo! AUC-ROC: ${result.metrics.aucRoc}, Accuracy: ${result.metrics.accuracy}`);
+        
+        // Reload models and datasets after successful training
+        await loadModels();
+        
+        setTimeout(() => {
+          setTrainingStatus('idle');
+          setTrainingMessage('');
+        }, 5000);
+      } else {
+        setTrainingStatus('error');
+        setTrainingMessage(result.error || 'Errore durante l\'addestramento');
+      }
 
     } catch (error) {
       setTrainingStatus('error');
@@ -254,18 +311,109 @@ export default function ModelPage() {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="text-center py-12">
-            <Brain className="mx-auto h-12 w-12 text-gray-400 mb-4" />
-            <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100 mb-2">
-              Nessun modello addestrato
-            </h3>
-            <p className="text-gray-500 dark:text-gray-400 mb-4">
-              Addestra il tuo primo modello per iniziare a fare previsioni
-            </p>
-            <Button disabled>
-              Addestra Modello
-            </Button>
-          </div>
+          {models.length === 0 ? (
+            <div className="text-center py-12">
+              <Brain className="mx-auto h-12 w-12 text-gray-400 mb-4" />
+              <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100 mb-2">
+                Nessun modello addestrato
+              </h3>
+              <p className="text-gray-500 dark:text-gray-400 mb-4">
+                Addestra il tuo primo modello per iniziare a fare previsioni
+              </p>
+            </div>
+          ) : (
+            <div className="space-y-4">
+              {models.map((model) => (
+                <div key={model.id} className="border rounded-lg p-4">
+                  <div className="flex items-start justify-between">
+                    <div className="flex-1">
+                      <h4 className="font-medium text-lg mb-2">{model.name}</h4>
+                      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
+                        <div className="text-center p-3 bg-blue-50 dark:bg-blue-950 rounded-lg">
+                          <div className="text-xl font-bold text-blue-600 dark:text-blue-400">
+                            {model.metrics.aucRoc}
+                          </div>
+                          <div className="text-sm text-blue-600 dark:text-blue-400">AUC-ROC</div>
+                        </div>
+                        <div className="text-center p-3 bg-green-50 dark:bg-green-950 rounded-lg">
+                          <div className="text-xl font-bold text-green-600 dark:text-green-400">
+                            {model.metrics.accuracy}
+                          </div>
+                          <div className="text-sm text-green-600 dark:text-green-400">Accuracy</div>
+                        </div>
+                        <div className="text-center p-3 bg-purple-50 dark:bg-purple-950 rounded-lg">
+                          <div className="text-xl font-bold text-purple-600 dark:text-purple-400">
+                            {model.metrics.precision}
+                          </div>
+                          <div className="text-sm text-purple-600 dark:text-purple-400">Precision</div>
+                        </div>
+                        <div className="text-center p-3 bg-orange-50 dark:bg-orange-950 rounded-lg">
+                          <div className="text-xl font-bold text-orange-600 dark:text-orange-400">
+                            {model.metrics.recall}
+                          </div>
+                          <div className="text-sm text-orange-600 dark:text-orange-400">Recall</div>
+                        </div>
+                      </div>
+                      <div className="space-y-2">
+                        <p className="text-sm text-gray-600 dark:text-gray-300">
+                          <span className="font-medium">Dataset:</span> {model.datasetName}
+                        </p>
+                        <p className="text-sm text-gray-600 dark:text-gray-300">
+                          <span className="font-medium">Algoritmo:</span> {model.algorithm}
+                        </p>
+                        <p className="text-sm text-gray-600 dark:text-gray-300">
+                          <span className="font-medium">Addestrato:</span> {new Date(model.createdAt).toLocaleDateString('it-IT')}
+                        </p>
+                      </div>
+                    </div>
+                    <div className="flex flex-col gap-2 ml-4">
+                      <Button 
+                        variant="outline" 
+                        size="sm"
+                        onClick={() => router.push(`/model/${model.id}`)}
+                      >
+                        <BarChart3 className="mr-2 h-4 w-4" />
+                        Dettagli
+                      </Button>
+                      <Button 
+                        variant="outline" 
+                        size="sm" 
+                        className="text-red-600 hover:text-red-700 border-red-200 hover:border-red-300"
+                        onClick={async () => {
+                          try {
+                            const response = await fetch(`/api/models?modelId=${model.id}`, {
+                              method: 'DELETE',
+                            });
+                            if (response.ok) {
+                              await loadModels();
+                            }
+                          } catch (error) {
+                            console.error('Error deleting model:', error);
+                          }
+                        }}
+                      >
+                        <Trash2 className="mr-2 h-4 w-4" />
+                        Elimina
+                      </Button>
+                    </div>
+                  </div>
+                  {model.featureImportance && model.featureImportance.length > 0 && (
+                    <div className="mt-4 pt-4 border-t">
+                      <h5 className="font-medium mb-2">Feature Importance</h5>
+                      <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
+                        {model.featureImportance.slice(0, 6).map((feature, index) => (
+                          <div key={index} className="flex justify-between text-sm">
+                            <span>{feature.name}</span>
+                            <span className="font-medium">{(feature.importance * 100).toFixed(1)}%</span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+          )}
         </CardContent>
       </Card>
 

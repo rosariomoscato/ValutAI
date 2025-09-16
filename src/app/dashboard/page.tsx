@@ -1,6 +1,7 @@
 "use client";
 
 import { useSession } from "@/lib/auth-client";
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Lock, FileSpreadsheet, Brain, Target, BarChart3, Upload } from "lucide-react";
@@ -8,6 +9,54 @@ import Link from "next/link";
 
 export default function DashboardPage() {
   const { data: session, isPending } = useSession();
+  const [stats, setStats] = useState({
+    datasets: 0,
+    models: 0,
+    predictions: 0,
+    reports: 0
+  });
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    if (session) {
+      loadStats();
+    }
+  }, [session]);
+
+  const loadStats = async () => {
+    try {
+      // Carica dataset
+      const datasetsResponse = await fetch('/api/datasets');
+      const datasetsData = await datasetsResponse.json();
+      const datasetCount = datasetsData.datasets?.length || 0;
+
+      // Carica modelli
+      const modelsResponse = await fetch('/api/models');
+      const modelsData = await modelsResponse.json();
+      const modelCount = modelsData.models?.length || 0;
+
+      // Carica previsioni
+      const predictionsResponse = await fetch('/api/predictions/count');
+      const predictionsData = await predictionsResponse.json();
+      const predictionCount = predictionsData.count || 0;
+
+      // Carica report
+      const reportsResponse = await fetch('/api/reports/count');
+      const reportsData = await reportsResponse.json();
+      const reportCount = reportsData.count || 0;
+
+      setStats({
+        datasets: datasetCount,
+        models: modelCount,
+        predictions: predictionCount,
+        reports: reportCount,
+      });
+    } catch (error) {
+      console.error('Error loading stats:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   if (isPending) {
     return (
@@ -53,9 +102,11 @@ export default function DashboardPage() {
             <FileSpreadsheet className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">0</div>
+            <div className="text-2xl font-bold">{loading ? '-' : stats.datasets}</div>
             <p className="text-xs text-muted-foreground">
-              Nessun dataset caricato
+              {stats.datasets === 0 ? 'Nessun dataset caricato' : 
+               stats.datasets === 1 ? '1 dataset caricato' : 
+               `${stats.datasets} dataset caricati`}
             </p>
           </CardContent>
         </Card>
@@ -66,9 +117,11 @@ export default function DashboardPage() {
             <Brain className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">0</div>
+            <div className="text-2xl font-bold">{loading ? '-' : stats.models}</div>
             <p className="text-xs text-muted-foreground">
-              Nessun modello addestrato
+              {stats.models === 0 ? 'Nessun modello addestrato' : 
+               stats.models === 1 ? '1 modello addestrato' : 
+               `${stats.models} modelli addestrati`}
             </p>
           </CardContent>
         </Card>
@@ -79,9 +132,11 @@ export default function DashboardPage() {
             <Target className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">0</div>
+            <div className="text-2xl font-bold">{loading ? '-' : stats.predictions}</div>
             <p className="text-xs text-muted-foreground">
-              Nessuna previsione effettuata
+              {stats.predictions === 0 ? 'Nessuna previsione effettuata' : 
+               stats.predictions === 1 ? '1 previsione effettuata' : 
+               `${stats.predictions} previsioni effettuate`}
             </p>
           </CardContent>
         </Card>
@@ -92,9 +147,11 @@ export default function DashboardPage() {
             <BarChart3 className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">0</div>
+            <div className="text-2xl font-bold">{loading ? '-' : stats.reports}</div>
             <p className="text-xs text-muted-foreground">
-              Nessun report generato
+              {stats.reports === 0 ? 'Nessun report generato' : 
+               stats.reports === 1 ? '1 report generato' : 
+               `${stats.reports} report generati`}
             </p>
           </CardContent>
         </Card>
