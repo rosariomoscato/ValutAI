@@ -1,0 +1,51 @@
+ID preventivo;Settore cliente;Dimensione cliente;Prezzo totale (€);Sconto (%);Tempi consegna (giorni);Canale;Responsabile;Sorgente lead;Esito;Data preventivo;Data esito;Note
+QT-001;Manifatturiero;Medio;15420;15;45;Email;Mario Rossi;Sito web;vinto;2024-01-05;2024-01-25;Cliente soddisfatto, consegna puntuale
+QT-002;Edilizio;Grande;89500;8;60;Telefono;Laura Bianchi;Fiera;perso;2024-01-08;2024-02-15;Prezzo troppo elevato rispetto a concorrenza
+QT-003;Servizi IT;Medio;22500;12;30;Email;Marco Verdi;LinkedIn;vinto;2024-01-12;2024-01-28;Progetto personalizzato ben accettato
+QT-004;Commercio;Piccolo;8750;20;15;Email;Paolo Russo;Google Ads;perso;2024-01-15;2024-01-30;Cliente ha scelto fornitore locale più economico
+QT-005;Manifatturiero;Piccolo;12300;18;25;Telefono;Anna Gallo;Passaparola;vinto;2024-01-18;2024-02-10;Rapporto personale con cliente decisivo
+QT-006;Edilizio;Medio;45600;10;90;Email;Mario Rossi;Consulente;vinto;2024-01-22;2024-04-20;Progetto complesso ma ben gestito
+QT-007;Servizi IT;Grande;67800;5;45;Telefono;Laura Bianchi;LinkedIn;perso;2024-01-25;2024-02-20;Scelta soluzione enterprise competitor
+QT-008;Commercio;Medio;23500;15;20;Email;Marco Verdi;Email marketing;vinto;2024-01-28;2024-02-15;Offerta competitiva e servizio rapido
+QT-009;Manifatturiero;Grande;98700;7;120;Email;Paolo Russo;Fiera;perso;2024-02-01;2024-06-01;Requisiti tecnici non soddisfatti
+QT-010;Edilizio;Piccolo;15600;22;30;Telefono;Anna Gallo;Passaparola;vinto;2024-02-05;2024-03-05;Cliente piccolo ma fedele
+QT-011;Servizi IT;Medio;34500;12;40;Email;Mario Rossi;Sito web;vinto;2024-02-08;2024-03-15;Soluzione tecnica superiore
+QT-012;Commercio;Grande;54300;8;25;Telefono;Laura Bianchi;Google Ads;perso;2024-02-12;2024-03-10;Budget ridotto da parte del cliente
+QT-013;Manifatturiero;Piccolo;9800;25;15;Email;Marco Verdi;LinkedIn;vinto;2024-02-15;2024-02-28;Prezzo aggressivo ha chiuso la vendita
+QT-014;Edilizio;Medio;67200;6;75;Email;Paolo Russo;Consulente;perso;2024-02-18;2024-05-10;Tempi di consegna ritenuti troppo lunghi
+QT-015;Servizi IT;Piccolo;18900;18;20;Telefono;Anna Gallo;Email marketing;vinto;2024-02-22;2024-03-10;Assistenza personalizzata apprezzata
+QT-016;Commercio;Medio;31200;14;35;Email;Mario Rossi;Passaparola;vinto;2024-02-26;2024-03-25;Referenze positive da clienti simili
+QT-017;Manifatturiero;Grande;87600;5;100;Email;Laura Bianchi;Fiera;perso;2024-03-01;2024-06-15;Perdita contro fornitore internazionale
+QT-018;Edilizio;Piccolo;21300;20;40;Telefono;Marco Verdi;Sito web;vinto;2024-03-05;2024-04-10;Flessibilità nei termini di pagamento
+QT-019;Servizi IT;Grande;73400;4;50;Email;Paolo Russo;LinkedIn;perso;2024-03-08;2024-04-20;Soluzione tecnicamente inadeguata
+QT-020;Commercio;Piccolo;14500;22;18;Email;Anna Gallo;Google Ads;vinto;2024-03-12;2024-03-25;Servizio clienti eccellente
+QT-021;Manifatturiero;Medio;44500;10;55;Telefono;Mario Rossi;Consulente;vinto;2024-03-15;2024-05-05;Progetto su misura ben realizzato
+QT-022;Edilizio;Grande;92300;6;80;Email;Laura Bianchi;Fiera;perso;2024-03-18;2024-06-10;Normative di settore non conformi
+QT-023;Servizi IT;Medio;28900;15;30;Email;Marco Verdi;Email marketing;vinto;2024-03-22;2024-04-15;Formazione inclusa nell'offerta
+QT-024;Commercio;Grande;61200;8;22;Telefono;Paolo Russo;Passaparola;perso;2024-03-25;2024-04-20;Concorrenza agguerrita sul prezzo
+QT-025;Manifatturiero;Piccolo;11200;20;20;Email;Anna Gallo;LinkedIn;vinto;2024-03-28;2024-04-15;Supporto post-vendita completo
+QT-026;Edilizio;Medio;53400;9;65;Email;Mario Rossi;Sito web;vinto;2024-04-02;2024-06-05;Qualità superiore rispetto a concorrenti
+QT-027;Servizi IT;Piccolo;16700;18;25;Telefono;Laura Bianchi;Google Ads;perso;2024-04-05;2024-04-25;Cliente ha scelto soluzione open source
+QT-028;Commercio;Medio;37800;12;30;Email;Marco Verdi;Consulente;vinto;2024-04-08;2024-05-08;Dimostrazione prodotto convincente
+QT-029;Manifatturiero;Grande;81200;6;110;Email;Paolo Russo;Fiera;perso;2024-04-12;2024-08-05;Requisiti di certificazione non soddisfatti
+QT-030;Edilizio;Piccolo;18900;22;35;Telefono;Anna Gallo;Passaparola;vinto;2024-04-15;2024-05-20;Disponibilità immediata prodotti
+QT-031;Servizi IT;Medio;39800;10;45;Email;Mario Rossi;LinkedIn;vinto;2024-04-18;2024-06-02;Integrazione con sistemi esistenti
+QT-032;Commercio;Grande;72900;7;28;Email;Laura Bianchi;Email marketing;perso;2024-04-22;2024-05-20;Scarto di qualità rispetto a specifiche
+QT-033;Manifatturiero;Piccolo;13400;18;15;Telefono;Marco Verdi;Google Ads;vinto;2024-04-25;2024-05-10;Prezzo competitivo per qualità
+QT-034;Edilizio;Medio;46700;11;70;Email;Paolo Russo;Sito web;vinto;2024-04-28;2024-07-05;Progettazione dettagliata apprezzata
+QT-035;Servizi IT;Grande;65400;5;55;Email;Anna Gallo;Consulente;perso;2024-05-02;2024-06-20;Integrazione complessa non gestibile
+QT-036;Commercio;Piccolo;15600;20;22;Email;Mario Rossi;Passaparola;vinto;2024-05-06;2024-05-25;Servizio personalizzato per piccole quantità
+QT-037;Manifatturiero;Medio;42300;13;50;Telefono;Laura Bianchi;Fiera;vinto;2024-05-09;2024-06-25;Prototipo funzionante prima del pagamento
+QT-038;Edilizio;Grande;85600;6;95;Email;Marco Verdi;LinkedIn;perso;2024-05-13;2024-08-20;Documentazione tecnica incompleta
+QT-039;Servizi IT;Piccolo;19800;16;28;Email;Paolo Russo;Google Ads;vinto;2024-05-16;2024-06-10;Supporto remoto 24/7 incluso
+QT-040;Commercio;Medio;34100;14;32;Telefono;Anna Gallo;Email marketing;vinto;2024-05-20;2024-06-20;Condizioni di pagamento flessibili
+QT-041;Manifatturiero;Grande;78900;7;105;Email;Mario Rossi;Consulente;perso;2024-05-23;2024-09-05;Conformità ambientale non garantita
+QT-042;Edilizio;Piccolo;22100;19;42;Email;Laura Bianchi;Passaparola;vinto;2024-05-27;2024-07-05;Materiale di alta qualità a buon prezzo
+QT-043;Servizi IT;Medio;31200;12;38;Telefono;Marco Verdi;Sito web;vinto;2024-05-30;2024-07-05;Formazione tecnica inclusa
+QT-044;Commercio;Grande;69800;8;26;Email;Paolo Russo;Fiera;perso;2024-06-03;2024-06-25;Tempi di consegna troppo lunghi per urgenza
+QT-045;Manifatturiero;Piccolo;14300;21;18;Email;Anna Gallo;LinkedIn;vinto;2024-06-06;2024-06-20;Campioni prodotto gratuiti inviati
+QT-046;Edilizio;Medio;52100;10;68;Telefono;Mario Rossi;Google Ads;vinto;2024-06-10;2024-08-15;Sistema di garanzia esteso
+QT-047;Servizi IT;Grande;71200;6;48;Email;Laura Bianchi;Email marketing;perso;2024-06-13;2024-07-25;Scalabilità insufficiente per esigenze
+QT-048;Commercio;Piccolo;17800;19;25;Email;Marco Verdi;Consulente;vinto;2024-06-17;2024-07-10;Assistenza installazione inclusa
+QT-049;Manifatturiero;Medio;45600;11;72;Email;Paolo Russo;Passaparola;perso;2024-06-20;2024-09-05;Competizione con fornitore locale consolidato
+QT-050;Edilizio;Grande;93400;5;85;Telefono;Anna Gallo;Fiera;vinto;2024-06-24;2024-09-15;Progetto chiave in mano di alto livello
