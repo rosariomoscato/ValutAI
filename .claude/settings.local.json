@@ -16,7 +16,8 @@
       "Bash(npm install:*)",
       "Bash(npx shadcn@latest add:*)",
       "Bash(npm run db:generate:*)",
-      "Bash(npm run db:migrate:*)"
+      "Bash(npm run db:migrate:*)",
+      "Bash(git commit:*)"
     ],
     "additionalDirectories": [
       "C:\\c\\Projects\\nextjs-better-auth-postgresql-starter-kit"
