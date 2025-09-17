@@ -14,6 +14,7 @@ export default function ReportsPage() {
   const [loading, setLoading] = useState(true);
   const [generatingReport, setGeneratingReport] = useState(false);
   const [downloadingReport, setDownloadingReport] = useState<string | null>(null);
+  const [generatingPDF, setGeneratingPDF] = useState(false);
 
   useEffect(() => {
     if (session) {
@@ -114,6 +115,40 @@ export default function ReportsPage() {
     }
   };
 
+  const exportPDF = async () => {
+    setGeneratingPDF(true);
+    
+    try {
+      console.log('Generating PDF report...');
+      
+      const response = await fetch('/api/reports/pdf');
+      
+      if (response.ok) {
+        const blob = await response.blob();
+        const url = window.URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = 'valutai_report_completo.pdf';
+        
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        window.URL.revokeObjectURL(url);
+        
+        console.log('PDF report generated successfully');
+      } else {
+        const errorData = await response.json();
+        console.error('PDF generation failed:', errorData);
+        alert('Errore nella generazione del PDF: ' + (errorData.error || 'Errore sconosciuto'));
+      }
+    } catch (error) {
+      console.error('Error generating PDF:', error);
+      alert('Errore di rete durante la generazione del PDF');
+    } finally {
+      setGeneratingPDF(false);
+    }
+  };
+
   const generateReport = async () => {
     if (!hasData) {
       console.log('Cannot generate report: no data available');
@@ -193,9 +228,18 @@ export default function ReportsPage() {
             Genera report dettagliati con insights e raccomandazioni per migliorare le performance
           </p>
         </div>
-        <Button disabled>
-          <Download className="mr-2 h-4 w-4" />
-          Esporta PDF
+        <Button onClick={exportPDF} disabled={generatingPDF}>
+          {generatingPDF ? (
+            <>
+              <div className="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-primary border-t-transparent"></div>
+              Generazione...
+            </>
+          ) : (
+            <>
+              <Download className="mr-2 h-4 w-4" />
+              Esporta PDF
+            </>
+          )}
         </Button>
       </div>
 
