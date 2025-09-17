@@ -491,7 +491,7 @@ export async function GET(request: NextRequest) {
       await browser.close();
 
       // Return PDF content
-      return new NextResponse(pdfBuffer, {
+      return new NextResponse(Buffer.from(pdfBuffer), {
         headers: {
           'Content-Type': 'application/pdf',
           'Content-Disposition': 'attachment; filename="valutai_report_completo.pdf"',

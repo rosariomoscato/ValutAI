@@ -285,7 +285,7 @@ export default function ReportsPage() {
               Dati Disponibili per Report
             </CardTitle>
             <CardDescription className="text-green-700 dark:text-green-300">
-              {datasets.length} dataset{datasets.length !== 1 ? 's' : ''} e {models.length} modello{models.length !== 1 ? 'i' : ''} disponibili per generare report
+              {datasets.length} dataset{datasets.length !== 1 ? 's' : ''} e {models.length} {models.length !== 1 ? 'modelli' : 'modello'} disponibili per generare report
             </CardDescription>
           </CardHeader>
           <CardContent>
