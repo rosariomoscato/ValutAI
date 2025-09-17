@@ -107,9 +107,38 @@ export async function POST(request: NextRequest) {
     }
 
     // Create model record
+    // Helper functions for consistent model naming
+    const sanitizeDatasetName = (name: string) => {
+      return name
+        .replace(/[^a-zA-Z0-9\s]/g, '') // Remove special characters except spaces
+        .replace(/\s+/g, '-') // Replace spaces with dashes
+        .trim();
+    };
+
+    const getAlgorithmDisplayName = (algo: string) => {
+      switch (algo) {
+        case 'logistic_regression':
+          return 'Regressione-Logistica';
+        case 'random_forest':
+          return 'Random-Forest';
+        default:
+          return algo.replace(/_/g, '-');
+      }
+    };
+
+    const formatDateForModelName = () => {
+      return new Date().toLocaleDateString('it-IT').replace(/\//g, '-');
+    };
+
+    // Generate new model name format: Modello_Nome-Dataset_Nome-Algoritmo_Data
+    const sanitizedDatasetName = sanitizeDatasetName(datasetRecord[0].name);
+    const algorithmDisplayName = getAlgorithmDisplayName(algorithm);
+    const formattedDate = formatDateForModelName();
+    const modelName = `Modello_${sanitizedDatasetName}_${algorithmDisplayName}_${formattedDate}`;
+
     const modelResult = await db.insert(model).values({
       id: sql`gen_random_uuid()`,
-      name: `Modello ${datasetRecord[0].name} - ${new Date().toLocaleDateString('it-IT')}`,
+      name: modelName,
       datasetId,
       userId: session.user.id,
       algorithm,
