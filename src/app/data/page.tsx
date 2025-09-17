@@ -4,7 +4,8 @@ import { useSession } from "@/lib/auth-client";
 import { useState, useRef, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Lock, Upload, FileSpreadsheet, Database, CheckCircle, Upload as UploadIcon, AlertCircle, CheckCircle2, Calendar, FileText } from "lucide-react";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
+import { Lock, Upload, FileSpreadsheet, Database, CheckCircle, Upload as UploadIcon, AlertCircle, CheckCircle2, Calendar, FileText, Trash2 } from "lucide-react";
 
 interface Dataset {
   id: string;
@@ -26,6 +27,7 @@ export default function DataPage() {
   const [uploadMessage, setUploadMessage] = useState('');
   const [datasets, setDatasets] = useState<Dataset[]>([]);
   const [isLoadingDatasets, setIsLoadingDatasets] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Carica i dataset quando la pagina viene caricata
@@ -102,6 +104,27 @@ export default function DataPage() {
       setUploadMessage(`Errore durante il caricamento: ${error instanceof Error ? error.message : 'Errore sconosciuto'}`);
     } finally {
       setIsUploading(false);
+    }
+  };
+
+  const handleDeleteDataset = async (datasetId: string) => {
+    setIsDeleting(true);
+    try {
+      const response = await fetch(`/api/datasets?id=${datasetId}`, {
+        method: 'DELETE',
+      });
+
+      if (response.ok) {
+        // Rimuovi il dataset dalla lista
+        setDatasets(prev => prev.filter(ds => ds.id !== datasetId));
+      } else {
+        const result = await response.json();
+        console.error('Error deleting dataset:', result.error);
+      }
+    } catch (error) {
+      console.error('Error deleting dataset:', error);
+    } finally {
+      setIsDeleting(false);
     }
   };
 
@@ -499,6 +522,35 @@ QT-002,Edilizio,Grande,89500,8,60,Telefono,Laura Bianchi,Fiera,perso,2024-01-08,
                           {dataset.recordCount} record
                         </div>
                       </div>
+                      <AlertDialog>
+                        <AlertDialogTrigger asChild>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            className="text-red-600 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-950"
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </AlertDialogTrigger>
+                        <AlertDialogContent>
+                          <AlertDialogHeader>
+                            <AlertDialogTitle>Conferma Cancellazione</AlertDialogTitle>
+                            <AlertDialogDescription>
+                              Sei sicuro di voler cancellare il dataset &ldquo;{dataset.name}&rdquo;? Questa azione eliminerà permanentemente il dataset e tutti i dati correlati (preventivi, modelli, predizioni e report).
+                            </AlertDialogDescription>
+                          </AlertDialogHeader>
+                          <AlertDialogFooter>
+                            <AlertDialogCancel>Annulla</AlertDialogCancel>
+                            <AlertDialogAction
+                              onClick={() => handleDeleteDataset(dataset.id)}
+                              disabled={isDeleting}
+                              className="bg-red-600 hover:bg-red-700"
+                            >
+                              {isDeleting ? 'Cancellazione...' : 'Cancella'}
+                            </AlertDialogAction>
+                          </AlertDialogFooter>
+                        </AlertDialogContent>
+                      </AlertDialog>
                     </div>
                   </div>
                   {dataset.updatedAt && (
