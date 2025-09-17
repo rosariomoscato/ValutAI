@@ -88,6 +88,30 @@ export default function ModelDetailPage() {
     }
   };
 
+  const handleExportModel = async () => {
+    if (!model) return;
+    
+    try {
+      const response = await fetch(`/api/models/${model.id}/export`);
+      if (response.ok) {
+        const blob = await response.blob();
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `${model.name.replace(/[^a-z0-9]/gi, '_').toLowerCase()}_model_export.json`;
+        document.body.appendChild(a);
+        a.click();
+        window.URL.revokeObjectURL(url);
+        document.body.removeChild(a);
+      } else {
+        setError('Errore durante l&apos;esportazione del modello');
+      }
+    } catch (error) {
+      console.error('Error exporting model:', error);
+      setError('Errore durante l&apos;esportazione del modello');
+    }
+  };
+
   if (isPending || loading) {
     return (
       <div className="flex justify-center items-center h-screen">
@@ -144,7 +168,7 @@ export default function ModelDetailPage() {
           </div>
         </div>
         <div className="flex gap-2">
-          <Button variant="outline">
+          <Button variant="outline" onClick={handleExportModel}>
             <Download className="mr-2 h-4 w-4" />
             Esporta
           </Button>
