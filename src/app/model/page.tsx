@@ -45,6 +45,7 @@ export default function ModelPage() {
   const [datasets, setDatasets] = useState<Dataset[]>([]);
   const [models, setModels] = useState<Model[]>([]);
   const [selectedDataset, setSelectedDataset] = useState<string>('');
+  const [selectedAlgorithm, setSelectedAlgorithm] = useState<string>('logistic_regression');
   const [isTraining, setIsTraining] = useState(false);
   const [trainingStatus, setTrainingStatus] = useState<'idle' | 'training' | 'success' | 'error'>('idle');
   const [trainingMessage, setTrainingMessage] = useState('');
@@ -99,7 +100,7 @@ export default function ModelPage() {
         },
         body: JSON.stringify({
           datasetId: selectedDataset,
-          algorithm: 'logistic_regression',
+          algorithm: selectedAlgorithm,
         }),
       });
 
@@ -202,9 +203,14 @@ export default function ModelPage() {
               
               <div>
                 <label className="text-sm font-medium mb-2 block">Algoritmo</label>
-                <div className="border rounded-md p-3 text-sm">
-                  Regressione Logistica
-                </div>
+                <select 
+                  value={selectedAlgorithm} 
+                  onChange={(e) => setSelectedAlgorithm(e.target.value)}
+                  className="w-full border rounded-md px-3 py-2 text-sm"
+                >
+                  <option value="logistic_regression">Regressione Logistica</option>
+                  <option value="random_forest">Random Forest</option>
+                </select>
               </div>
             </div>
 
@@ -265,7 +271,7 @@ export default function ModelPage() {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
             <div>
               <h4 className="font-medium mb-3">Regressione Logistica</h4>
               <ul className="space-y-2 text-sm text-gray-600 dark:text-gray-300">
@@ -273,6 +279,20 @@ export default function ModelPage() {
                 <li>• Buone performance su dati tabulari</li>
                 <li>• Probabilità calibrate</li>
                 <li>• Feature importance nativa</li>
+                <li>• Adatto a dataset piccoli</li>
+                <li>• Basso rischio di overfitting</li>
+              </ul>
+            </div>
+            
+            <div>
+              <h4 className="font-medium mb-3">Random Forest</h4>
+              <ul className="space-y-2 text-sm text-gray-600 dark:text-gray-300">
+                <li>• Performance superiori</li>
+                <li>• Gestisce relazioni non lineari</li>
+                <li>• Robusto verso outliers</li>
+                <li>• Feature importance integrata</li>
+                <li>• Meno sensibile a overfitting</li>
+                <li>• Parallelizzabile</li>
               </ul>
             </div>
             
@@ -359,7 +379,11 @@ export default function ModelPage() {
                           <span className="font-medium">Dataset:</span> {model.datasetName}
                         </p>
                         <p className="text-sm text-gray-600 dark:text-gray-300">
-                          <span className="font-medium">Algoritmo:</span> {model.algorithm}
+                          <span className="font-medium">Algoritmo:</span> {
+                            model.algorithm === 'logistic_regression' ? 'Regressione Logistica' : 
+                            model.algorithm === 'random_forest' ? 'Random Forest' : 
+                            model.algorithm
+                          }
                         </p>
                         <p className="text-sm text-gray-600 dark:text-gray-300">
                           <span className="font-medium">Addestrato:</span> {new Date(model.createdAt).toLocaleDateString('it-IT')}

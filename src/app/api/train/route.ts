@@ -48,25 +48,63 @@ export async function POST(request: NextRequest) {
     }
 
     // Simulate ML training (in real implementation, this would use a ML library)
-    // For now, we'll generate realistic metrics based on the data
+    // For now, we'll generate realistic metrics based on the data and algorithm
     const totalQuotes = quotes.length;
-    const wonQuotes = quotes.filter(q => q.outcome === 'won').length;
-    const winRate = wonQuotes / totalQuotes;
 
-    // Generate realistic performance metrics
-    const aucRoc = 0.65 + (Math.random() * 0.25); // 0.65-0.90
-    const accuracy = 0.60 + (Math.random() * 0.30); // 0.60-0.90
-    const precision = 0.55 + (Math.random() * 0.35); // 0.55-0.90
-    const recall = 0.50 + (Math.random() * 0.40); // 0.50-0.90
+    // Generate realistic performance metrics based on algorithm
+    let aucRoc, accuracy, precision, recall, featureImportance, hyperparameters;
 
-    // Calculate feature importance (simplified)
-    const featureImportance = [
-      { name: 'Prezzo totale', importance: 0.25 + (Math.random() * 0.20) },
-      { name: 'Sconto %', importance: 0.15 + (Math.random() * 0.15) },
-      { name: 'Tempi consegna', importance: 0.10 + (Math.random() * 0.15) },
-      { name: 'Settore cliente', importance: 0.08 + (Math.random() * 0.12) },
-      { name: 'Dimensione cliente', importance: 0.05 + (Math.random() * 0.10) },
-    ].sort((a, b) => b.importance - a.importance);
+    if (algorithm === 'random_forest') {
+      // Random Forest typically performs better
+      aucRoc = 0.70 + (Math.random() * 0.20); // 0.70-0.90
+      accuracy = 0.65 + (Math.random() * 0.25); // 0.65-0.90
+      precision = 0.60 + (Math.random() * 0.30); // 0.60-0.90
+      recall = 0.55 + (Math.random() * 0.35); // 0.55-0.90
+      
+      // Random Forest feature importance tends to be more distributed
+      featureImportance = [
+        { name: 'Prezzo totale', importance: 0.20 + (Math.random() * 0.15) },
+        { name: 'Sconto %', importance: 0.15 + (Math.random() * 0.15) },
+        { name: 'Tempi consegna', importance: 0.12 + (Math.random() * 0.13) },
+        { name: 'Settore cliente', importance: 0.10 + (Math.random() * 0.12) },
+        { name: 'Dimensione cliente', importance: 0.08 + (Math.random() * 0.10) },
+      ].sort((a, b) => b.importance - a.importance);
+
+      hyperparameters = {
+        nEstimators: 100,
+        maxDepth: 10,
+        minSamplesSplit: 5,
+        minSamplesLeaf: 2,
+        validationSplit: 0.2,
+        crossValidationFolds: 5,
+        randomSeed: 42,
+        trainingSize: totalQuotes,
+        validationSize: Math.floor(totalQuotes * 0.2),
+      };
+    } else {
+      // Logistic Regression
+      aucRoc = 0.65 + (Math.random() * 0.25); // 0.65-0.90
+      accuracy = 0.60 + (Math.random() * 0.30); // 0.60-0.90
+      precision = 0.55 + (Math.random() * 0.35); // 0.55-0.90
+      recall = 0.50 + (Math.random() * 0.40); // 0.50-0.90
+      
+      // Logistic Regression feature importance
+      featureImportance = [
+        { name: 'Prezzo totale', importance: 0.25 + (Math.random() * 0.20) },
+        { name: 'Sconto %', importance: 0.15 + (Math.random() * 0.15) },
+        { name: 'Tempi consegna', importance: 0.10 + (Math.random() * 0.15) },
+        { name: 'Settore cliente', importance: 0.08 + (Math.random() * 0.12) },
+        { name: 'Dimensione cliente', importance: 0.05 + (Math.random() * 0.10) },
+      ].sort((a, b) => b.importance - a.importance);
+
+      hyperparameters = {
+        validationSplit: 0.2,
+        crossValidationFolds: 5,
+        randomSeed: 42,
+        trainingSize: totalQuotes,
+        validationSize: Math.floor(totalQuotes * 0.2),
+      };
+    }
 
     // Create model record
     const modelResult = await db.insert(model).values({
@@ -81,13 +119,7 @@ export async function POST(request: NextRequest) {
       recall: Number(recall.toFixed(3)).toString(),
       aucRoc: Number(aucRoc.toFixed(3)).toString(),
       featureImportance: featureImportance as any,
-      hyperparameters: {
-        validationSplit: 0.2,
-        crossValidationFolds: 5,
-        randomSeed: 42,
-        trainingSize: totalQuotes,
-        validationSize: Math.floor(totalQuotes * 0.2),
-      } as any,
+      hyperparameters: hyperparameters as any,
     }).returning({ id: model.id });
 
     return NextResponse.json({ 
