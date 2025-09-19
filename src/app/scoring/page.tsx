@@ -189,7 +189,7 @@ export default function ScoringPage() {
                   <SelectContent>
                     {models.map((model) => (
                       <SelectItem key={model.id} value={model.id}>
-                        {model.name} ({(parseFloat(model.accuracy) * 100).toFixed(1)}% - {model.algorithm || 'Random Forest'})
+                        {model.name} ({(parseFloat(model.accuracy) * 100).toFixed(1)}% - {model.algorithm === 'logistic_regression' ? 'Regressione Logistica' : model.algorithm === 'random_forest' ? 'Random Forest' : model.algorithm === 'naive_bayes' ? 'Naive Bayes' : model.algorithm || 'Random Forest'})
                       </SelectItem>
                     ))}
                   </SelectContent>
@@ -203,7 +203,7 @@ export default function ScoringPage() {
                   <>
                     <span>Accuracy: {(parseFloat(selectedModel.accuracy) * 100).toFixed(1)}%</span>
                     <span>•</span>
-                    <span>Algoritmo: {selectedModel.algorithm || 'Random Forest'}</span>
+                    <span>Algoritmo: {selectedModel.algorithm === 'logistic_regression' ? 'Regressione Logistica' : selectedModel.algorithm === 'random_forest' ? 'Random Forest' : selectedModel.algorithm === 'naive_bayes' ? 'Naive Bayes' : selectedModel.algorithm || 'Random Forest'}</span>
                   </>
                 ) : null;
               })()}

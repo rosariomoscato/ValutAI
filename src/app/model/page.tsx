@@ -208,8 +208,9 @@ export default function ModelPage() {
                   onChange={(e) => setSelectedAlgorithm(e.target.value)}
                   className="w-full border rounded-md px-3 py-2 text-sm"
                 >
-                  <option value="logistic_regression">Regressione Logistica</option>
+                  <option value="naive_bayes">Naive Bayes</option>
                   <option value="random_forest">Random Forest</option>
+                  <option value="logistic_regression">Regressione Logistica</option>
                 </select>
               </div>
             </div>
@@ -273,14 +274,14 @@ export default function ModelPage() {
         <CardContent>
           <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
             <div>
-              <h4 className="font-medium mb-3">Regressione Logistica</h4>
+              <h4 className="font-medium mb-3">Naive Bayes</h4>
               <ul className="space-y-2 text-sm text-gray-600 dark:text-gray-300">
-                <li>• Alta interpretabilità</li>
-                <li>• Buone performance su dati tabulari</li>
-                <li>• Probabilità calibrate</li>
-                <li>• Feature importance nativa</li>
-                <li>• Adatto a dataset piccoli</li>
-                <li>• Basso rischio di overfitting</li>
+                <li>• Alta efficienza computazionale</li>
+                <li>• Prestazioni eccellenti su dataset grandi</li>
+                <li>• Gestisce bene features categorici</li>
+                <li>• Training molto rapido</li>
+                <li>• Robusto verso rumore</li>
+                <li>• Buon baseline per problemi classici</li>
               </ul>
             </div>
             
@@ -293,6 +294,18 @@ export default function ModelPage() {
                 <li>• Feature importance integrata</li>
                 <li>• Meno sensibile a overfitting</li>
                 <li>• Parallelizzabile</li>
+              </ul>
+            </div>
+            
+            <div>
+              <h4 className="font-medium mb-3">Regressione Logistica</h4>
+              <ul className="space-y-2 text-sm text-gray-600 dark:text-gray-300">
+                <li>• Alta interpretabilità</li>
+                <li>• Buone performance su dati tabulari</li>
+                <li>• Probabilità calibrate</li>
+                <li>• Feature importance nativa</li>
+                <li>• Adatto a dataset piccoli</li>
+                <li>• Basso rischio di overfitting</li>
               </ul>
             </div>
             
@@ -382,6 +395,7 @@ export default function ModelPage() {
                           <span className="font-medium">Algoritmo:</span> {
                             model.algorithm === 'logistic_regression' ? 'Regressione Logistica' : 
                             model.algorithm === 'random_forest' ? 'Random Forest' : 
+                            model.algorithm === 'naive_bayes' ? 'Naive Bayes' : 
                             model.algorithm
                           }
                         </p>
