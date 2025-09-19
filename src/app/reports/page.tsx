@@ -343,12 +343,27 @@ export default function ReportsPage() {
                 </Select>
               </div>
             )}
-            <div className="flex items-center gap-4 text-sm text-green-700 dark:text-green-300">
-              <span>Dataset: {(datasets[0]?.name as string) || 'N/A'}</span>
-              <span>•</span>
-              <span>Modello: {selectedModelId ? models.find(m => m.id === selectedModelId)?.name || 'N/A' : models[0]?.name || 'N/A'}</span>
-              <span>•</span>
-              <span>Accuracy: {selectedModelId ? ((parseFloat(models.find(m => m.id === selectedModelId)?.accuracy || '0') * 100).toFixed(1)) : ((parseFloat(models[0]?.accuracy || '0') * 100).toFixed(1))}%</span>
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-4 text-sm text-green-700 dark:text-green-300">
+                <span>Dataset: {(datasets[0]?.name as string) || 'N/A'}</span>
+                <span>•</span>
+                <span>Modello: {selectedModelId ? models.find(m => m.id === selectedModelId)?.name || 'N/A' : models[0]?.name || 'N/A'}</span>
+                <span>•</span>
+                <span>Accuracy: {selectedModelId ? ((parseFloat(models.find(m => m.id === selectedModelId)?.accuracy || '0') * 100).toFixed(1)) : ((parseFloat(models[0]?.accuracy || '0') * 100).toFixed(1))}%</span>
+              </div>
+              <Button onClick={generateReport} disabled={generatingReport}>
+                {generatingReport ? (
+                  <>
+                    <div className="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-primary border-t-transparent"></div>
+                    Generazione...
+                  </>
+                ) : (
+                  <>
+                    <Download className="mr-2 h-4 w-4" />
+                    Genera Report
+                  </>
+                )}
+              </Button>
             </div>
           </CardContent>
         </Card>
@@ -721,25 +736,12 @@ export default function ReportsPage() {
               <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100 mb-2">
                 Nessun report generato
               </h3>
-              <p className="text-gray-500 dark:text-gray-400 mb-4">
+              <p className="text-gray-500 dark:text-gray-400">
                 {hasData ? 
-                  'Genera il tuo primo report per ottenere insights dettagliati' :
-                  'Genera il tuo primo report dopo aver addestrato un modello'
+                  'Genera report per ottenere insights dettagliati' :
+                  'Genera report dopo aver addestrato un modello'
                 }
               </p>
-              <Button onClick={generateReport} disabled={!hasData || generatingReport}>
-                {generatingReport ? (
-                  <>
-                    <div className="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-primary border-t-transparent"></div>
-                    Generazione...
-                  </>
-                ) : (
-                  <>
-                    <Download className="mr-2 h-4 w-4" />
-                    Genera Report
-                  </>
-                )}
-              </Button>
             </div>
           )}
         </CardContent>
