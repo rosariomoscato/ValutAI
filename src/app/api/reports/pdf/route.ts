@@ -54,13 +54,34 @@ export async function GET(request: NextRequest) {
     <meta charset="UTF-8">
     <title>Report Completo ValutAI</title>
     <style>
+        :root {
+            --bg-white: #ffffff;
+            --primary-50: #eff6ff;
+            --primary-100: #dbeafe;
+            --primary-500: #3b82f6;
+            --primary-600: #2563eb;
+            --primary-700: #1d4ed8;
+            --primary-800: #1e40af;
+            --primary-900: #1e3a8a;
+            --bg-slate-50: #f8fafc;
+            --bg-slate-100: #f1f5f9;
+            --bg-slate-200: #e2e8f0;
+            --border-slate-200: #e2e8f0;
+            --text-slate-600: #64748b;
+            --text-slate-700: #334155;
+            --text-slate-800: #1e293b;
+            --text-gray-500: #6b7280;
+            --text-gray-700: #374151;
+            --text-gray-900: #111827;
+        }
+        
         body {
             font-family: 'Helvetica Neue', Arial, sans-serif;
             line-height: 1.6;
             margin: 0;
             padding: 40px;
-            color: #333;
-            background-color: #fff;
+            color: var(--text-gray-900);
+            background-color: var(--bg-white);
         }
         .container {
             max-width: 1200px;
@@ -69,9 +90,9 @@ export async function GET(request: NextRequest) {
         .header {
             text-align: center;
             margin-bottom: 50px;
-            border-bottom: 3px solid #2563eb;
+            border-bottom: 3px solid var(--primary-600);
             padding-bottom: 30px;
-            background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+            background: linear-gradient(135deg, var(--bg-slate-50) 0%, var(--border-slate-200) 100%);
             padding: 40px;
             border-radius: 12px;
             margin-bottom: 40px;
@@ -79,17 +100,17 @@ export async function GET(request: NextRequest) {
         .title {
             font-size: 32px;
             font-weight: bold;
-            color: #1e40af;
+            color: var(--primary-800);
             margin-bottom: 10px;
         }
         .subtitle {
             font-size: 18px;
-            color: #64748b;
+            color: var(--text-slate-600);
             margin-bottom: 20px;
         }
         .generation-date {
             font-size: 14px;
-            color: #64748b;
+            color: var(--text-slate-600);
         }
         .section {
             margin-bottom: 40px;
@@ -99,7 +120,7 @@ export async function GET(request: NextRequest) {
             overflow: hidden;
         }
         .section-header {
-            background: linear-gradient(135deg, #1e40af 0%, #2563eb 100%);
+            background: linear-gradient(135deg, var(--primary-800) 0%, var(--primary-600) 100%);
             color: white;
             padding: 20px 30px;
             margin: 0;
@@ -122,21 +143,21 @@ export async function GET(request: NextRequest) {
             margin-bottom: 30px;
         }
         .metric-card {
-            background: #f8fafc;
+            background: var(--bg-slate-50);
             padding: 20px;
             border-radius: 8px;
-            border-left: 4px solid #2563eb;
+            border-left: 4px solid var(--primary-600);
             text-align: center;
         }
         .metric-value {
             font-size: 28px;
             font-weight: bold;
-            color: #1e40af;
+            color: var(--primary-800);
             margin-bottom: 5px;
         }
         .metric-label {
             font-size: 14px;
-            color: #64748b;
+            color: var(--text-slate-600);
             text-transform: uppercase;
             letter-spacing: 0.5px;
         }
@@ -146,20 +167,20 @@ export async function GET(request: NextRequest) {
             gap: 20px;
         }
         .model-card {
-            background: #f8fafc;
+            background: var(--bg-slate-50);
             padding: 20px;
             border-radius: 8px;
-            border: 1px solid #e2e8f0;
+            border: 1px solid var(--border-slate-200);
         }
         .model-name {
             font-size: 18px;
             font-weight: bold;
-            color: #1e40af;
+            color: var(--primary-800);
             margin-bottom: 10px;
         }
         .model-info {
             font-size: 14px;
-            color: #64748b;
+            color: var(--text-slate-600);
             margin-bottom: 15px;
         }
         .model-metrics {
@@ -173,31 +194,31 @@ export async function GET(request: NextRequest) {
             justify-content: space-between;
             align-items: center;
             padding: 15px;
-            background: #f8fafc;
+            background: var(--bg-slate-50);
             border-radius: 8px;
             margin-bottom: 10px;
         }
         .dataset-name {
             font-weight: 600;
-            color: #1e40af;
+            color: var(--primary-800);
         }
         .dataset-info {
             font-size: 14px;
-            color: #64748b;
+            color: var(--text-slate-600);
         }
         .feature-item {
             display: flex;
             justify-content: space-between;
             align-items: center;
             padding: 12px 0;
-            border-bottom: 1px solid #e2e8f0;
+            border-bottom: 1px solid var(--border-slate-200);
         }
         .feature-name {
             font-weight: 500;
-            color: #374151;
+            color: var(--text-gray-700);
         }
         .feature-importance {
-            background: #2563eb;
+            background: var(--primary-600);
             color: white;
             padding: 4px 12px;
             border-radius: 20px;
@@ -210,15 +231,15 @@ export async function GET(request: NextRequest) {
             gap: 20px;
         }
         .insight-card {
-            background: #f8fafc;
+            background: var(--bg-slate-50);
             padding: 20px;
             border-radius: 8px;
-            border-top: 4px solid #2563eb;
+            border-top: 4px solid var(--primary-600);
         }
         .insight-title {
             font-size: 16px;
             font-weight: bold;
-            color: #1e40af;
+            color: var(--primary-800);
             margin-bottom: 15px;
         }
         .insight-list {
@@ -229,25 +250,25 @@ export async function GET(request: NextRequest) {
         .insight-list li {
             padding: 5px 0;
             font-size: 14px;
-            color: #374151;
+            color: var(--text-gray-700);
         }
         .insight-list li:before {
             content: "• ";
-            color: #2563eb;
+            color: var(--primary-600);
             font-weight: bold;
         }
         .no-data {
             text-align: center;
             padding: 40px;
-            color: #64748b;
+            color: var(--text-slate-600);
             font-style: italic;
         }
         .footer {
             text-align: center;
             margin-top: 50px;
             padding: 20px;
-            border-top: 1px solid #e2e8f0;
-            color: #64748b;
+            border-top: 1px solid var(--border-slate-200);
+            color: var(--text-slate-600);
             font-size: 14px;
         }
         @media print {
@@ -370,14 +391,14 @@ export async function GET(request: NextRequest) {
                     ${userModels.map((model, index) => {
                         const features = model.featureImportance as Array<{name: string, importance: number}> || [];
                         return features.length > 0 ? `
-                            <h3 style="color: #1e40af; margin-bottom: 15px;">${model.name}</h3>
+                            <h3 style="color: var(--primary-800); margin-bottom: 15px;">${model.name}</h3>
                             ${features.slice(0, 5).map(feature => `
                                 <div class="feature-item">
                                     <span class="feature-name">${feature.name}</span>
                                     <span class="feature-importance">${(feature.importance * 100).toFixed(0)}%</span>
                                 </div>
                             `).join('')}
-                            ${index < userModels.length - 1 ? '<hr style="margin: 30px 0; border: none; border-top: 1px solid #e2e8f0;">' : ''}
+                            ${index < userModels.length - 1 ? '<hr style="margin: 30px 0; border: none; border-top: 1px solid var(--border-slate-200);">' : ''}
                         ` : '';
                     }).join('')}
                 </div>

@@ -74,27 +74,48 @@ export async function GET(
     <meta charset="UTF-8">
     <title>${reportData.title}</title>
     <style>
+        :root {
+            --primary-50: #eff6ff;
+            --primary-100: #dbeafe;
+            --primary-500: #3b82f6;
+            --primary-600: #2563eb;
+            --primary-700: #1d4ed8;
+            --primary-800: #1e40af;
+            --primary-900: #1e3a8a;
+            --sky-500: #0ea5e9;
+            --sky-600: #0284c7;
+            --sky-700: #0369a1;
+            --sky-800: #075985;
+            --bg-slate-50: #f8fafc;
+            --bg-blue-50: #dbeafe;
+            --bg-blue-100: #eff6ff;
+            --border-slate-200: #e2e8f0;
+            --text-gray-500: #6b7280;
+            --text-gray-700: #374151;
+            --text-gray-900: #111827;
+        }
+        
         body {
             font-family: Arial, sans-serif;
             line-height: 1.6;
             margin: 40px;
-            color: #333;
+            color: var(--text-gray-900);
         }
         .header {
             text-align: center;
             margin-bottom: 40px;
-            border-bottom: 2px solid #2563eb;
+            border-bottom: 2px solid var(--primary-600);
             padding-bottom: 20px;
         }
         .title {
             font-size: 24px;
             font-weight: bold;
-            color: #1e40af;
+            color: var(--primary-800);
             margin-bottom: 10px;
         }
         .subtitle {
             font-size: 16px;
-            color: #6b7280;
+            color: var(--text-gray-500);
             margin-bottom: 5px;
         }
         .section {
@@ -103,9 +124,9 @@ export async function GET(
         .section-title {
             font-size: 18px;
             font-weight: bold;
-            color: #1e40af;
+            color: var(--primary-800);
             margin-bottom: 15px;
-            border-left: 4px solid #2563eb;
+            border-left: 4px solid var(--primary-600);
             padding-left: 10px;
         }
         .metrics-grid {
@@ -115,25 +136,25 @@ export async function GET(
             margin-bottom: 20px;
         }
         .metric-card {
-            background: #f8fafc;
+            background: var(--bg-slate-50);
             padding: 15px;
             border-radius: 8px;
-            border: 1px solid #e2e8f0;
+            border: 1px solid var(--border-slate-200);
         }
         .metric-label {
             font-size: 12px;
-            color: #6b7280;
+            color: var(--text-gray-500);
             text-transform: uppercase;
             margin-bottom: 5px;
         }
         .metric-value {
             font-size: 20px;
             font-weight: bold;
-            color: #1e40af;
+            color: var(--primary-800);
         }
         .performance-score {
             text-align: center;
-            background: #dbeafe;
+            background: var(--bg-blue-50);
             padding: 20px;
             border-radius: 8px;
             margin-bottom: 20px;
@@ -141,11 +162,11 @@ export async function GET(
         .score-value {
             font-size: 36px;
             font-weight: bold;
-            color: #1e40af;
+            color: var(--primary-800);
         }
         .score-label {
             font-size: 14px;
-            color: #6b7280;
+            color: var(--text-gray-500);
             margin-top: 5px;
         }
         .feature-item {
@@ -153,13 +174,13 @@ export async function GET(
             justify-content: space-between;
             align-items: center;
             padding: 10px 0;
-            border-bottom: 1px solid #e2e8f0;
+            border-bottom: 1px solid var(--border-slate-200);
         }
         .feature-name {
             font-weight: 500;
         }
         .feature-importance {
-            background: #2563eb;
+            background: var(--primary-600);
             color: white;
             padding: 4px 8px;
             border-radius: 4px;
@@ -170,23 +191,23 @@ export async function GET(
             padding: 0;
         }
         .recommendation-item {
-            background: #f0f9ff;
+            background: var(--bg-blue-50);
             padding: 12px;
             margin-bottom: 10px;
             border-radius: 6px;
-            border-left: 4px solid #0ea5e9;
+            border-left: 4px solid var(--sky-500);
         }
         .recommendation-category {
             font-weight: bold;
-            color: #0369a1;
+            color: var(--sky-700);
             margin-bottom: 8px;
         }
         .footer {
             margin-top: 40px;
             text-align: center;
-            color: #6b7280;
+            color: var(--text-gray-500);
             font-size: 12px;
-            border-top: 1px solid #e2e8f0;
+            border-top: 1px solid var(--border-slate-200);
             padding-top: 20px;
         }
     </style>

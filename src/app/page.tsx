@@ -39,10 +39,10 @@ export default function Home() {
                   <TrendingUp className="ml-2 h-5 w-5" />
                 </Link>
               </Button>
-              <Button asChild variant="outline" size="lg" className="w-full sm:w-auto">
-                <Link href="/data">
+              <Button asChild variant="outline" size="lg" className="w-full sm:w-auto text-black border-gray-800 hover:bg-gray-800 hover:text-white" style={{ color: 'black', borderColor: '#1f2937' }}>
+                <Link href="/data" style={{ color: 'black' }}>
                   Importa Dati
-                  <FileSpreadsheet className="ml-2 h-5 w-5" />
+                  <FileSpreadsheet className="ml-2 h-5 w-5" style={{ color: 'black' }} />
                 </Link>
               </Button>
             </div>
