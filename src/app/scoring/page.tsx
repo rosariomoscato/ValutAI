@@ -4,7 +4,14 @@ import { useSession } from "@/lib/auth-client";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Lock, Target, Brain, TrendingUp, AlertCircle, Info, CheckCircle } from "lucide-react";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 export default function ScoringPage() {
   const { data: session, isPending } = useSession();
@@ -18,8 +25,22 @@ export default function ScoringPage() {
     salesRep: "",
     leadSource: ""
   });
-  const [models, setModels] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [models, setModels] = useState<Array<{
+    id: string;
+    name: string;
+    algorithm: string;
+    accuracy: string;
+    precision: string;
+    recall: string;
+    aucRoc: string;
+    featureImportance: Record<string, number>;
+    hyperparameters: Record<string, unknown>;
+    createdAt: Date;
+    updatedAt: Date;
+    datasetName: string;
+    datasetId: string;
+  }>>([]);
+    const [selectedModelId, setSelectedModelId] = useState<string>("");
   const [prediction, setPrediction] = useState<{
     successProbability?: number;
     confidence?: number;
@@ -27,25 +48,29 @@ export default function ScoringPage() {
     recommendations?: string[];
   } | null>(null);
 
-  useEffect(() => {
-    if (session) {
-      loadModels();
-    }
-  }, [session]);
-
-  const loadModels = async () => {
+  const loadModels = useCallback(async () => {
     try {
       const response = await fetch('/api/models');
       if (response.ok) {
         const data = await response.json();
-        setModels(data.models || []);
+        const loadedModels = data.models || [];
+        setModels(loadedModels);
+        
+        // Auto-select first model if there's only one, or if none is selected
+        if (loadedModels.length > 0 && !selectedModelId) {
+          setSelectedModelId(loadedModels[0].id);
+        }
       }
     } catch (error) {
       console.error('Error loading models:', error);
-    } finally {
-      setLoading(false);
     }
-  };
+  }, [selectedModelId]);
+
+  useEffect(() => {
+    if (session) {
+      loadModels();
+    }
+  }, [session, loadModels]);
 
   if (isPending) {
     return (
@@ -78,7 +103,7 @@ export default function ScoringPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (models.length === 0) {
+    if (models.length === 0 || !selectedModelId) {
       return;
     }
 
@@ -90,7 +115,7 @@ export default function ScoringPage() {
         },
         body: JSON.stringify({
           formData,
-          modelId: models[0].id // Use the first available model
+          modelId: selectedModelId // Use the selected model
         }),
       });
 
@@ -144,14 +169,44 @@ export default function ScoringPage() {
               Modello Disponibile
             </CardTitle>
             <CardDescription className="text-green-700 dark:text-green-300">
-              Modello "{models[0].name}" pronto per effettuare previsioni
+              {models.length === 1 ? (
+                <>Modello &ldquo;{models[0].name}&rdquo; pronto per effettuare previsioni</>
+              ) : (
+                <>Seleziona un modello per effettuare previsioni</>
+              )}
             </CardDescription>
           </CardHeader>
           <CardContent>
+            {models.length > 1 && (
+              <div className="mb-4">
+                <label className="text-sm font-medium mb-2 block text-green-700 dark:text-green-300">
+                  Seleziona Modello
+                </label>
+                <Select value={selectedModelId} onValueChange={setSelectedModelId}>
+                  <SelectTrigger className="w-full">
+                    <SelectValue placeholder="Seleziona un modello" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {models.map((model) => (
+                      <SelectItem key={model.id} value={model.id}>
+                        {model.name} ({(parseFloat(model.accuracy) * 100).toFixed(1)}% - {model.algorithm || 'Random Forest'})
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            )}
             <div className="flex items-center gap-4 text-sm text-green-700 dark:text-green-300">
-              <span>Accuracy: {(parseFloat(models[0].accuracy) * 100).toFixed(1)}%</span>
-              <span>•</span>
-              <span>Algoritmo: {models[0].algorithm || 'Random Forest'}</span>
+              {selectedModelId && (() => {
+                const selectedModel = models.find(m => m.id === selectedModelId);
+                return selectedModel ? (
+                  <>
+                    <span>Accuracy: {(parseFloat(selectedModel.accuracy) * 100).toFixed(1)}%</span>
+                    <span>•</span>
+                    <span>Algoritmo: {selectedModel.algorithm || 'Random Forest'}</span>
+                  </>
+                ) : null;
+              })()}
             </div>
           </CardContent>
         </Card>
@@ -287,7 +342,7 @@ export default function ScoringPage() {
                 </div>
               </div>
               
-              <Button type="submit" disabled={models.length === 0} className="w-full">
+              <Button type="submit" disabled={models.length === 0 || !selectedModelId} className="w-full">
                 <TrendingUp className="mr-2 h-4 w-4" />
                 Calcola Previsione
               </Button>
