@@ -4,25 +4,48 @@ import { useSession } from "@/lib/auth-client";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Lock, BarChart3, Download, FileText, TrendingUp, AlertCircle, CheckCircle } from "lucide-react";
-import { useState, useEffect } from "react";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { useState, useEffect, useCallback } from "react";
+
+interface Model {
+  id: string;
+  name: string;
+  algorithm: string;
+  accuracy: string;
+  precision: string;
+  recall: string;
+  aucRoc: string;
+  f1Score?: string;
+  featureImportance?: Array<{ name: string; importance: number }>;
+  status: string;
+  createdAt: Date | string;
+  datasetName?: string;
+}
+
+interface Report {
+  id: string;
+  title: string;
+  createdAt: Date | string;
+  modelName?: string;
+}
 
 export default function ReportsPage() {
   const { data: session, isPending } = useSession();
-  const [datasets, setDatasets] = useState<any[]>([]);
-  const [models, setModels] = useState<any[]>([]);
-  const [reports, setReports] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [datasets, setDatasets] = useState<Record<string, unknown>[]>([]);
+  const [models, setModels] = useState<Model[]>([]);
+  const [reports, setReports] = useState<Report[]>([]);
+  const [selectedModelId, setSelectedModelId] = useState<string>("");
   const [generatingReport, setGeneratingReport] = useState(false);
   const [downloadingReport, setDownloadingReport] = useState<string | null>(null);
   const [generatingPDF, setGeneratingPDF] = useState(false);
 
-  useEffect(() => {
-    if (session) {
-      loadData();
-    }
-  }, [session]);
-
-  const loadData = async () => {
+  const loadData = useCallback(async () => {
     try {
       console.log('Loading data for reports page...');
       
@@ -45,7 +68,13 @@ export default function ReportsPage() {
         const modelsData = await modelsResponse.json();
         modelsCount = modelsData.models?.length || 0;
         console.log('Models loaded:', modelsCount);
-        setModels(modelsData.models || []);
+        const loadedModels = modelsData.models || [];
+        setModels(loadedModels);
+        
+        // Auto-select first model if there's only one, or if none is selected
+        if (loadedModels.length > 0 && !selectedModelId) {
+          setSelectedModelId(loadedModels[0].id);
+        }
       } else {
         console.error('Failed to load models:', modelsResponse.status);
       }
@@ -68,9 +97,15 @@ export default function ReportsPage() {
     } catch (error) {
       console.error('Error loading report data:', error);
     } finally {
-      setLoading(false);
+      // setLoading removed as unused
     }
-  };
+  }, [selectedModelId]);
+
+  useEffect(() => {
+    if (session) {
+      loadData();
+    }
+  }, [session, loadData]);
 
   const hasData = datasets.length > 0 && models.length > 0;
 
@@ -155,7 +190,7 @@ export default function ReportsPage() {
       return;
     }
 
-    if (!models[0]?.id) {
+    if (!selectedModelId) {
       console.log('Cannot generate report: no model ID available');
       return;
     }
@@ -163,14 +198,14 @@ export default function ReportsPage() {
     setGeneratingReport(true);
 
     try {
-      console.log('Generating report for model:', models[0].id);
+      console.log('Generating report for model:', selectedModelId);
       const response = await fetch('/api/reports', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          modelId: models[0].id
+          modelId: selectedModelId
         }),
       });
 
@@ -289,12 +324,31 @@ export default function ReportsPage() {
             </CardDescription>
           </CardHeader>
           <CardContent>
+            {models.length > 1 && (
+              <div className="mb-4">
+                <label className="text-sm font-medium mb-2 block text-green-700 dark:text-green-300">
+                  Seleziona Modello per Report
+                </label>
+                <Select value={selectedModelId} onValueChange={setSelectedModelId}>
+                  <SelectTrigger className="w-full">
+                    <SelectValue placeholder="Seleziona un modello" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {models.map((model) => (
+                      <SelectItem key={model.id} value={model.id}>
+                        {model.name} ({(parseFloat(model.accuracy) * 100).toFixed(1)}% - {model.algorithm || 'Random Forest'})
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            )}
             <div className="flex items-center gap-4 text-sm text-green-700 dark:text-green-300">
-              <span>Dataset: {datasets[0]?.name || 'N/A'}</span>
+              <span>Dataset: {(datasets[0]?.name as string) || 'N/A'}</span>
               <span>•</span>
-              <span>Modello: {models[0]?.name || 'N/A'}</span>
+              <span>Modello: {selectedModelId ? models.find(m => m.id === selectedModelId)?.name || 'N/A' : models[0]?.name || 'N/A'}</span>
               <span>•</span>
-              <span>Accuracy: {(parseFloat(models[0]?.accuracy || 0) * 100).toFixed(1)}%</span>
+              <span>Accuracy: {selectedModelId ? ((parseFloat(models.find(m => m.id === selectedModelId)?.accuracy || '0') * 100).toFixed(1)) : ((parseFloat(models[0]?.accuracy || '0') * 100).toFixed(1))}%</span>
             </div>
           </CardContent>
         </Card>
@@ -315,7 +369,37 @@ export default function ReportsPage() {
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
-              {models.length > 0 ? (
+              {selectedModelId ? (() => {
+                const selectedModel = models.find(m => m.id === selectedModelId);
+                return selectedModel ? (
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="text-center p-3 border rounded-lg">
+                      <div className="text-2xl font-bold text-blue-600">
+                        {(parseFloat(selectedModel.aucRoc || '0.85') * 100).toFixed(0)}%
+                      </div>
+                      <div className="text-sm text-blue-600">AUC-ROC</div>
+                    </div>
+                    <div className="text-center p-3 border rounded-lg">
+                      <div className="text-2xl font-bold text-green-600">
+                        {(parseFloat(selectedModel.accuracy || '0.78') * 100).toFixed(0)}%
+                      </div>
+                      <div className="text-sm text-green-600">Accuracy</div>
+                    </div>
+                    <div className="text-center p-3 border rounded-lg">
+                      <div className="text-2xl font-bold text-purple-600">
+                        {(parseFloat(selectedModel.precision || '0.75') * 100).toFixed(0)}%
+                      </div>
+                      <div className="text-sm text-purple-600">Precision</div>
+                    </div>
+                    <div className="text-center p-3 border rounded-lg">
+                      <div className="text-2xl font-bold text-orange-600">
+                        {(parseFloat(selectedModel.recall || '0.72') * 100).toFixed(0)}%
+                      </div>
+                      <div className="text-sm text-orange-600">Recall</div>
+                    </div>
+                  </div>
+                ) : null;
+              })() : models.length > 0 ? (
                 <div className="grid grid-cols-2 gap-4">
                   <div className="text-center p-3 border rounded-lg">
                     <div className="text-2xl font-bold text-blue-600">
@@ -362,8 +446,10 @@ export default function ReportsPage() {
                   </div>
                 </div>
               )}
-              <p className={`text-sm text-center ${models.length > 0 ? 'text-green-600' : 'text-gray-500'}`}>
-                {models.length > 0 ? 
+              <p className={`text-sm text-center ${selectedModelId || models.length > 0 ? 'text-green-600' : 'text-gray-500'}`}>
+                {selectedModelId ? 
+                  `Modello "${models.find(m => m.id === selectedModelId)?.name}" mostra performance solide` :
+                  models.length > 0 ? 
                   `Modello "${models[0].name}" mostra performance solide` :
                   'Addestra un modello per vedere le metriche di performance'
                 }
@@ -385,7 +471,27 @@ export default function ReportsPage() {
           </CardHeader>
           <CardContent>
             <div className="space-y-3">
-              {models.length > 0 ? (
+              {selectedModelId ? (() => {
+                const selectedModel = models.find(m => m.id === selectedModelId);
+                return selectedModel ? (
+                  <>
+                    {(selectedModel.featureImportance || [
+                      { name: "Prezzo Totale", importance: 0.25 },
+                      { name: "Sconto %", importance: 0.20 },
+                      { name: "Tempi Consegna", importance: 0.15 },
+                      { name: "Settore Cliente", importance: 0.15 },
+                      { name: "Dimensione Cliente", importance: 0.10 },
+                    ]).slice(0, 5).map((feature, index: number) => (
+                      <div key={index} className="flex items-center justify-between">
+                        <span className="text-sm font-medium">{feature.name}</span>
+                        <span className="text-sm text-blue-600 font-medium">
+                          {(feature.importance * 100).toFixed(0)}%
+                        </span>
+                      </div>
+                    ))}
+                  </>
+                ) : null;
+              })() : models.length > 0 ? (
                 <>
                   {(models[0].featureImportance || [
                     { name: "Prezzo Totale", importance: 0.25 },
@@ -393,7 +499,7 @@ export default function ReportsPage() {
                     { name: "Tempi Consegna", importance: 0.15 },
                     { name: "Settore Cliente", importance: 0.15 },
                     { name: "Dimensione Cliente", importance: 0.10 },
-                  ]).slice(0, 5).map((feature: any, index: number) => (
+                  ]).slice(0, 5).map((feature, index: number) => (
                     <div key={index} className="flex items-center justify-between">
                       <span className="text-sm font-medium">{feature.name}</span>
                       <span className="text-sm text-blue-600 font-medium">
@@ -418,8 +524,8 @@ export default function ReportsPage() {
                   ))}
                 </>
               )}
-              <p className={`text-sm text-center mt-4 ${models.length > 0 ? 'text-green-600' : 'text-gray-500'}`}>
-                {models.length > 0 ? 
+              <p className={`text-sm text-center mt-4 ${selectedModelId || models.length > 0 ? 'text-green-600' : 'text-gray-500'}`}>
+                {selectedModelId || models.length > 0 ? 
                   'Analisi basata sul modello addestrato con i tuoi dati' :
                   'Le analisi saranno disponibili dopo l\'addestramento'
                 }
