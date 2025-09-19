@@ -42,16 +42,10 @@ export default function Home() {
               <div className="w-full sm:w-auto">
             <Link 
               href="/data" 
-              className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-all disabled:pointer-events-none disabled:opacity-50 h-10 px-6 border-2 border-black bg-white text-black hover:bg-black hover:text-white"
-              style={{ 
-                backgroundColor: 'white !important', 
-                borderColor: 'black !important', 
-                color: 'black !important',
-                borderWidth: '2px !important'
-              }}
+              className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-all disabled:pointer-events-none disabled:opacity-50 h-10 px-6 border border-gray-600 bg-white text-gray-800 hover:bg-gray-100 hover:text-gray-900"
             >
               Importa Dati
-              <FileSpreadsheet className="h-5 w-5" style={{ color: 'black !important' }} />
+              <FileSpreadsheet className="h-5 w-5 text-gray-800" />
             </Link>
           </div>
             </div>
@@ -208,16 +202,10 @@ export default function Home() {
           <div className="w-full sm:w-auto">
             <Link 
               href="/data" 
-              className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-all disabled:pointer-events-none disabled:opacity-50 h-10 px-6 border-2 border-black bg-white text-black hover:bg-black hover:text-white"
-              style={{ 
-                backgroundColor: 'white !important', 
-                borderColor: 'black !important', 
-                color: 'black !important',
-                borderWidth: '2px !important'
-              }}
+              className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-all disabled:pointer-events-none disabled:opacity-50 h-10 px-6 border border-gray-600 bg-white text-gray-800 hover:bg-gray-100 hover:text-gray-900"
             >
               Importa Dati
-              <FileSpreadsheet className="h-5 w-5" style={{ color: 'black !important' }} />
+              <FileSpreadsheet className="h-5 w-5 text-gray-800" />
             </Link>
           </div>
             </div>
