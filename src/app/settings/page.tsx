@@ -32,6 +32,7 @@ export default function SettingsPage() {
   const { data: session, isPending } = useSession();
   const [showAdvanced, setShowAdvanced] = useState(false);
   const [isExporting, setIsExporting] = useState(false);
+  const [isResetting, setIsResetting] = useState(false);
   
   const userRole = (session?.user as { role?: string })?.role || "viewer";
   const isOwner = userRole === "owner";
@@ -77,6 +78,39 @@ export default function SettingsPage() {
       alert('Esportazione fallita. Riprova più tardi.');
     } finally {
       setIsExporting(false);
+    }
+  };
+
+  const handleResetData = async () => {
+    if (isResetting) return;
+    
+    setIsResetting(true);
+    
+    try {
+      const response = await fetch('/api/reset/data', {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+      
+      if (!response.ok) {
+        throw new Error('Reset failed');
+      }
+      
+      await response.json();
+      
+      // Show success message
+      alert('Dati resettati con successo. Tutti i tuoi modelli, dataset e report sono stati cancellati.');
+      
+      // Optionally redirect to dashboard or refresh page
+      window.location.href = '/dashboard';
+      
+    } catch (error) {
+      console.error('Reset error:', error);
+      alert('Reset dei dati fallito. Riprova più tardi.');
+    } finally {
+      setIsResetting(false);
     }
   };
 
@@ -325,7 +359,13 @@ export default function SettingsPage() {
                         </AlertDialogHeader>
                         <AlertDialogFooter>
                           <AlertDialogCancel>Annulla</AlertDialogCancel>
-                          <AlertDialogAction className="bg-red-600 hover:bg-red-700">Resetta Dati</AlertDialogAction>
+                          <AlertDialogAction 
+                    onClick={handleResetData}
+                    disabled={isResetting}
+                    className="bg-red-600 hover:bg-red-700"
+                  >
+                    {isResetting ? 'Resetting...' : 'Resetta Dati'}
+                  </AlertDialogAction>
                         </AlertDialogFooter>
                       </AlertDialogContent>
                     </AlertDialog>
