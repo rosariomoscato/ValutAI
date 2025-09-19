@@ -115,3 +115,30 @@
     @apply bg-background text-foreground;
   }
 }
+
+/* Mobile-specific optimizations */
+@layer utilities {
+  .touch-manipulation {
+    touch-action: manipulation;
+  }
+  
+  .touch-target {
+    min-height: 44px;
+    min-width: 44px;
+  }
+  
+  /* Prevent double-tap zoom on touch devices */
+  .prevent-tap-zoom {
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+  }
+  
+  /* Improved touch feedback */
+  .touch-feedback {
+    transition: all 0.15s ease;
+  }
+  
+  .touch-feedback:active {
+    transform: scale(0.98);
+  }
+}

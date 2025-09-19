@@ -3,11 +3,38 @@
 import { useSession } from "@/lib/auth-client";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Lock, User, Shield, Database, Bell, Download, Trash2, Users } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { 
+  Lock, 
+  User, 
+  Shield, 
+  Download, 
+  Trash2, 
+  Users, 
+  ChevronDown,
+  ChevronUp,
+  Settings
+} from "lucide-react";
 import { SignOutButton } from "@/components/auth/sign-out-button";
+import { 
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
+import { useState } from "react";
 
 export default function SettingsPage() {
   const { data: session, isPending } = useSession();
+  const [showAdvanced, setShowAdvanced] = useState(false);
+  
+  const userRole = (session?.user as { role?: string })?.role || "viewer";
+  const isOwner = userRole === "owner";
 
   if (isPending) {
     return (
@@ -34,30 +61,32 @@ export default function SettingsPage() {
   }
 
   return (
-    <div className="flex-1 space-y-6 p-6">
+    <div className="flex-1 space-y-6 p-6 max-w-4xl mx-auto">
       {/* Header */}
-      <div className="flex justify-between items-center">
-        <div>
+      <div className="space-y-2">
+        <div className="flex items-center gap-2">
+          <Settings className="h-6 w-6 text-primary" />
           <h1 className="text-3xl font-bold tracking-tight">Impostazioni</h1>
-          <p className="text-muted-foreground">
-            Gestisci il tuo account e le preferenze della piattaforma
-          </p>
         </div>
+        <p className="text-muted-foreground">
+          Gestisci il tuo account e le preferenze della piattaforma
+        </p>
       </div>
 
-      {/* User Profile */}
+      {/* Profilo Account */}
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <User className="h-5 w-5" />
-            Profilo Utente
+            Profilo Account
           </CardTitle>
           <CardDescription>
-            Informazioni personali e dettagli dell&apos;account
+            Informazioni personali e dettagli del tuo account
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="space-y-4">
+          <div className="space-y-6">
+            {/* Profile Info */}
             <div className="grid md:grid-cols-2 gap-4">
               <div>
                 <label className="text-sm font-medium mb-2 block">Nome</label>
@@ -73,8 +102,11 @@ export default function SettingsPage() {
               </div>
               <div>
                 <label className="text-sm font-medium mb-2 block">Ruolo</label>
-                <div className="border rounded-md px-3 py-2 bg-gray-50 dark:bg-gray-800 capitalize">
-                  {((session.user as { role?: string }).role || "viewer")}
+                <div className="border rounded-md px-3 py-2 bg-gray-50 dark:bg-gray-800 flex items-center gap-2">
+                  <span className="capitalize">{userRole}</span>
+                  <Badge variant="secondary" className="text-xs">
+                    {userRole === "owner" ? "Amministratore" : "Utente"}
+                  </Badge>
                 </div>
               </div>
               <div>
@@ -84,27 +116,41 @@ export default function SettingsPage() {
                 </div>
               </div>
             </div>
+            
+            {/* Logout Section */}
+            <div className="pt-4 border-t">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h4 className="font-medium">Disconnessione</h4>
+                  <p className="text-sm text-muted-foreground">
+                    Disconnettiti dal tuo account
+                  </p>
+                </div>
+                <SignOutButton />
+              </div>
+            </div>
           </div>
         </CardContent>
       </Card>
 
-      {/* Account Security */}
+      {/* Sicurezza & Privacy */}
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Shield className="h-5 w-5" />
-            Sicurezza Account
+            Sicurezza & Privacy
           </CardTitle>
           <CardDescription>
-            Gestisci la sicurezza del tuo account
+            Gestisci la sicurezza e la privacy del tuo account
           </CardDescription>
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
+            {/* Google OAuth */}
             <div className="flex items-center justify-between p-4 border rounded-lg">
               <div>
                 <h4 className="font-medium">Autenticazione Google</h4>
-                <p className="text-sm text-gray-500 dark:text-gray-400">
+                <p className="text-sm text-muted-foreground">
                   Account connesso con Google OAuth
                 </p>
               </div>
@@ -114,80 +160,11 @@ export default function SettingsPage() {
               </div>
             </div>
             
+            {/* Notifications */}
             <div className="flex items-center justify-between p-4 border rounded-lg">
               <div>
-                <h4 className="font-medium">Sessioni Attive</h4>
-                <p className="text-sm text-gray-500 dark:text-gray-400">
-                  Disconnetti sessioni su altri dispositivi
-                </p>
-              </div>
-              <Button variant="outline" size="sm">
-                Gestisci Sessioni
-              </Button>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Data Management */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Database className="h-5 w-5" />
-            Gestione Dati
-          </CardTitle>
-          <CardDescription>
-            Gestisci i tuoi dati e preferenze
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-4">
-            <div className="flex items-center justify-between p-4 border rounded-lg">
-              <div>
-                <h4 className="font-medium">Esporta Dati</h4>
-                <p className="text-sm text-gray-500 dark:text-gray-400">
-                  Scarica tutti i tuoi dati in formato JSON
-                </p>
-              </div>
-              <Button variant="outline" size="sm">
-                <Download className="mr-2 h-4 w-4" />
-                Esporta
-              </Button>
-            </div>
-            
-            <div className="flex items-center justify-between p-4 border border-red-200 dark:border-red-800 rounded-lg">
-              <div>
-                <h4 className="font-medium text-red-600 dark:text-red-400">Elimina Account</h4>
-                <p className="text-sm text-red-500 dark:text-red-400">
-                  Cancella permanentemente il tuo account e tutti i dati
-                </p>
-              </div>
-              <Button variant="destructive" size="sm">
-                <Trash2 className="mr-2 h-4 w-4" />
-                Elimina
-              </Button>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Notifications */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Bell className="h-5 w-5" />
-            Notifiche
-          </CardTitle>
-          <CardDescription>
-            Configura le preferenze di notifica
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <h4 className="font-medium">Email Notifications</h4>
-                <p className="text-sm text-gray-500 dark:text-gray-400">
+                <h4 className="font-medium">Notifiche Email</h4>
+                <p className="text-sm text-muted-foreground">
                   Ricevi notifiche importanti via email
                 </p>
               </div>
@@ -196,11 +173,12 @@ export default function SettingsPage() {
               </Button>
             </div>
             
-            <div className="flex items-center justify-between">
+            {/* Training Notifications */}
+            <div className="flex items-center justify-between p-4 border rounded-lg">
               <div>
-                <h4 className="font-medium">Training Completato</h4>
-                <p className="text-sm text-gray-500 dark:text-gray-400">
-                  Notifica quando il modello è pronto
+                <h4 className="font-medium">Notifiche Training</h4>
+                <p className="text-sm text-muted-foreground">
+                  Avvisa quando il modello è pronto
                 </p>
               </div>
               <Button variant="outline" size="sm">
@@ -211,13 +189,13 @@ export default function SettingsPage() {
         </CardContent>
       </Card>
 
-      {/* Team Management (solo per owner) */}
-      {(session.user as { role?: string }).role === "owner" && (
+      {/* Team & Collaborazione */}
+      {isOwner && (
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Users className="h-5 w-5" />
-              Gestione Team
+              Team & Collaborazione
             </CardTitle>
             <CardDescription>
               Gestisci gli utenti e i permessi del tuo team
@@ -228,7 +206,7 @@ export default function SettingsPage() {
               <div className="flex items-center justify-between p-4 border rounded-lg">
                 <div>
                   <h4 className="font-medium">Invita Utenti</h4>
-                  <p className="text-sm text-gray-500 dark:text-gray-400">
+                  <p className="text-sm text-muted-foreground">
                     Aggiungi nuovi membri al tuo team
                   </p>
                 </div>
@@ -240,7 +218,7 @@ export default function SettingsPage() {
               <div className="flex items-center justify-between p-4 border rounded-lg">
                 <div>
                   <h4 className="font-medium">Gestisci Permessi</h4>
-                  <p className="text-sm text-gray-500 dark:text-gray-400">
+                  <p className="text-sm text-muted-foreground">
                     Configura i ruoli e gli accessi
                   </p>
                 </div>
@@ -253,60 +231,150 @@ export default function SettingsPage() {
         </Card>
       )}
 
-      {/* Danger Zone */}
-      <Card className="border-red-200 dark:border-red-800">
+      {/* Impostazioni Avanzate */}
+      <Card>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-red-600 dark:text-red-400">
-            <Shield className="h-5 w-5" />
-            Zona Pericolosa
+          <CardTitle className="flex items-center gap-2">
+            <Settings className="h-5 w-5" />
+            Impostazioni Avanzate
           </CardTitle>
-          <CardDescription className="text-red-600 dark:text-red-400">
-            Azioni irreversibili che cancelleranno i tuoi dati
+          <CardDescription>
+            Funzionalità avanzate e gestione dati
           </CardDescription>
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
-            <div className="flex items-center justify-between p-4 border border-red-200 dark:border-red-800 rounded-lg bg-red-50 dark:bg-red-950">
-              <div>
-                <h4 className="font-medium text-red-800 dark:text-red-200">Disconnetti Tutti i Dispositivi</h4>
-                <p className="text-sm text-red-600 dark:text-red-400">
-                  Termina tutte le sessioni attive eccetto quella corrente
-                </p>
-              </div>
-              <Button variant="outline" className="border-red-300 text-red-700 hover:bg-red-100" size="sm">
-                Disconnetti Tutti
-              </Button>
-            </div>
+            {/* Toggle Button */}
+            <Button
+              variant="outline"
+              onClick={() => setShowAdvanced(!showAdvanced)}
+              className="w-full justify-between"
+            >
+              {showAdvanced ? "Nascondi avanzate" : "Mostra avanzate"}
+              {showAdvanced ? (
+                <ChevronUp className="h-4 w-4" />
+              ) : (
+                <ChevronDown className="h-4 w-4" />
+              )}
+            </Button>
             
-            <div className="flex items-center justify-between p-4 border border-red-200 dark:border-red-800 rounded-lg bg-red-50 dark:bg-red-950">
-              <div>
-                <h4 className="font-medium text-red-800 dark:text-red-200">Resetta Dati</h4>
-                <p className="text-sm text-red-600 dark:text-red-400">
-                  Cancella tutti i dati ma mantieni l&apos;account
-                </p>
+            {/* Advanced Settings */}
+            {showAdvanced && (
+              <div className="space-y-4 pt-4 border-t">
+                {/* Data Export */}
+                <div className="flex items-center justify-between p-4 border rounded-lg">
+                  <div>
+                    <h4 className="font-medium">Esporta Dati</h4>
+                    <p className="text-sm text-muted-foreground">
+                      Scarica tutti i tuoi dati in formato JSON
+                    </p>
+                  </div>
+                  <Button variant="outline" size="sm">
+                    <Download className="mr-2 h-4 w-4" />
+                    Esporta
+                  </Button>
+                </div>
+                
+                {/* Active Sessions */}
+                <div className="flex items-center justify-between p-4 border rounded-lg">
+                  <div>
+                    <h4 className="font-medium">Sessioni Attive</h4>
+                    <p className="text-sm text-muted-foreground">
+                      Disconnetti sessioni su altri dispositivi
+                    </p>
+                  </div>
+                  <AlertDialog>
+                    <AlertDialogTrigger asChild>
+                      <Button variant="outline" size="sm">
+                        Disconnetti Tutti
+                      </Button>
+                    </AlertDialogTrigger>
+                    <AlertDialogContent>
+                      <AlertDialogHeader>
+                        <AlertDialogTitle>Disconnetti Tutti i Dispositivi</AlertDialogTitle>
+                        <AlertDialogDescription>
+                          Questa azione terminerà tutte le sessioni attive eccetto quella corrente. Dovrai accedere nuovamente sugli altri dispositivi.
+                        </AlertDialogDescription>
+                      </AlertDialogHeader>
+                      <AlertDialogFooter>
+                        <AlertDialogCancel>Annulla</AlertDialogCancel>
+                        <AlertDialogAction>Continua</AlertDialogAction>
+                      </AlertDialogFooter>
+                    </AlertDialogContent>
+                  </AlertDialog>
+                </div>
+                
+                {/* Danger Zone */}
+                <div className="space-y-4 pt-4 border-t">
+                  <h4 className="font-medium text-red-600 dark:text-red-400">Azioni Permanenti</h4>
+                  
+                  {/* Reset Data */}
+                  <div className="flex items-center justify-between p-4 border border-red-200 dark:border-red-800 rounded-lg bg-red-50 dark:bg-red-950">
+                    <div>
+                      <h4 className="font-medium text-red-800 dark:text-red-200">Resetta Dati</h4>
+                      <p className="text-sm text-red-600 dark:text-red-400">
+                        Cancella tutti i dati ma mantieni l&apos;account
+                      </p>
+                    </div>
+                    <AlertDialog>
+                      <AlertDialogTrigger asChild>
+                        <Button variant="outline" className="border-red-300 text-red-700 hover:bg-red-100" size="sm">
+                          Resetta Dati
+                        </Button>
+                      </AlertDialogTrigger>
+                      <AlertDialogContent>
+                        <AlertDialogHeader>
+                          <AlertDialogTitle>Resetta Dati</AlertDialogTitle>
+                          <AlertDialogDescription>
+                            Questa azione cancellerà permanentemente tutti i tuoi dati inclusi modelli, dataset e report. Il tuo account verrà mantenuto ma tutti i dati andranno persi.
+                          </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                          <AlertDialogCancel>Annulla</AlertDialogCancel>
+                          <AlertDialogAction className="bg-red-600 hover:bg-red-700">Resetta Dati</AlertDialogAction>
+                        </AlertDialogFooter>
+                      </AlertDialogContent>
+                    </AlertDialog>
+                  </div>
+                  
+                  {/* Delete Account */}
+                  <div className="flex items-center justify-between p-4 border border-red-200 dark:border-red-800 rounded-lg bg-red-50 dark:bg-red-950">
+                    <div>
+                      <h4 className="font-medium text-red-800 dark:text-red-200">Elimina Account</h4>
+                      <p className="text-sm text-red-600 dark:text-red-400">
+                        Cancella permanentemente il tuo account e tutti i dati
+                      </p>
+                    </div>
+                    <AlertDialog>
+                      <AlertDialogTrigger asChild>
+                        <Button variant="destructive" size="sm">
+                          <Trash2 className="mr-2 h-4 w-4" />
+                          Elimina
+                        </Button>
+                      </AlertDialogTrigger>
+                      <AlertDialogContent>
+                        <AlertDialogHeader>
+                          <AlertDialogTitle>Elimina Account</AlertDialogTitle>
+                          <AlertDialogDescription>
+                            Questa azione cancellerà permanentemente il tuo account e tutti i dati associati. Questa operazione non può essere annullata.
+                          </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                          <AlertDialogCancel>Annulla</AlertDialogCancel>
+                          <AlertDialogAction className="bg-red-600 hover:bg-red-700">Elimina Account</AlertDialogAction>
+                        </AlertDialogFooter>
+                      </AlertDialogContent>
+                    </AlertDialog>
+                  </div>
+                </div>
               </div>
-              <Button variant="outline" className="border-red-300 text-red-700 hover:bg-red-100" size="sm">
-                Resetta Dati
-              </Button>
-            </div>
+            )}
           </div>
         </CardContent>
       </Card>
 
-      {/* Logout */}
-      <Card>
-        <CardContent className="pt-6">
-          <div className="flex items-center justify-between">
-            <div>
-              <h4 className="font-medium">Disconnessione</h4>
-              <p className="text-sm text-gray-500 dark:text-gray-400">
-                Disconnettiti dal tuo account
-              </p>
-            </div>
-            <SignOutButton />
-          </div>
-        </CardContent>
-      </Card>
+
+
     </div>
   );
 }
