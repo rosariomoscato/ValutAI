@@ -33,6 +33,7 @@ export default function SettingsPage() {
   const [showAdvanced, setShowAdvanced] = useState(false);
   const [isExporting, setIsExporting] = useState(false);
   const [isResetting, setIsResetting] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
   
   const userRole = (session?.user as { role?: string })?.role || "viewer";
   const isOwner = userRole === "owner";
@@ -111,6 +112,39 @@ export default function SettingsPage() {
       alert('Reset dei dati fallito. Riprova più tardi.');
     } finally {
       setIsResetting(false);
+    }
+  };
+
+  const handleDeleteAccount = async () => {
+    if (isDeleting) return;
+    
+    setIsDeleting(true);
+    
+    try {
+      const response = await fetch('/api/account/delete', {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+      
+      if (!response.ok) {
+        throw new Error('Account deletion failed');
+      }
+      
+      await response.json();
+      
+      // Show success message
+      alert('Account eliminato con successo. Tutti i tuoi dati sono stati cancellati.');
+      
+      // Redirect to home page
+      window.location.href = '/';
+      
+    } catch (error) {
+      console.error('Account deletion error:', error);
+      alert('Eliminazione account fallita. Riprova più tardi.');
+    } finally {
+      setIsDeleting(false);
     }
   };
 
@@ -395,7 +429,13 @@ export default function SettingsPage() {
                         </AlertDialogHeader>
                         <AlertDialogFooter>
                           <AlertDialogCancel>Annulla</AlertDialogCancel>
-                          <AlertDialogAction className="bg-red-600 hover:bg-red-700">Elimina Account</AlertDialogAction>
+                          <AlertDialogAction 
+                    onClick={handleDeleteAccount}
+                    disabled={isDeleting}
+                    className="bg-red-600 hover:bg-red-700"
+                  >
+                    {isDeleting ? 'Eliminazione...' : 'Elimina Account'}
+                  </AlertDialogAction>
                         </AlertDialogFooter>
                       </AlertDialogContent>
                     </AlertDialog>
