@@ -39,12 +39,21 @@ export default function Home() {
                   <TrendingUp className="ml-2 h-5 w-5" />
                 </Link>
               </Button>
-              <Button asChild variant="outline" size="lg" className="w-full sm:w-auto text-black border-gray-800 hover:bg-gray-800 hover:text-white" style={{ color: 'black', borderColor: '#1f2937' }}>
-                <Link href="/data" style={{ color: 'black' }}>
-                  Importa Dati
-                  <FileSpreadsheet className="ml-2 h-5 w-5" style={{ color: 'black' }} />
-                </Link>
-              </Button>
+              <div className="w-full sm:w-auto">
+            <Link 
+              href="/data" 
+              className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-all disabled:pointer-events-none disabled:opacity-50 h-10 px-6 border-2 border-black bg-white text-black hover:bg-black hover:text-white"
+              style={{ 
+                backgroundColor: 'white !important', 
+                borderColor: 'black !important', 
+                color: 'black !important',
+                borderWidth: '2px !important'
+              }}
+            >
+              Importa Dati
+              <FileSpreadsheet className="h-5 w-5" style={{ color: 'black !important' }} />
+            </Link>
+          </div>
             </div>
           </div>
         </div>
@@ -196,12 +205,21 @@ export default function Home() {
                   <TrendingUp className="ml-2 h-5 w-5" />
                 </Link>
               </Button>
-              <Button asChild size="lg" variant="outline" className="w-full sm:w-auto border-white text-white hover:bg-white hover:text-blue-600">
-                <Link href="/data">
-                  Importa Dati
-                  <FileSpreadsheet className="ml-2 h-5 w-5" />
-                </Link>
-              </Button>
+          <div className="w-full sm:w-auto">
+            <Link 
+              href="/data" 
+              className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-all disabled:pointer-events-none disabled:opacity-50 h-10 px-6 border-2 border-black bg-white text-black hover:bg-black hover:text-white"
+              style={{ 
+                backgroundColor: 'white !important', 
+                borderColor: 'black !important', 
+                color: 'black !important',
+                borderWidth: '2px !important'
+              }}
+            >
+              Importa Dati
+              <FileSpreadsheet className="h-5 w-5" style={{ color: 'black !important' }} />
+            </Link>
+          </div>
             </div>
           </div>
         </div>
