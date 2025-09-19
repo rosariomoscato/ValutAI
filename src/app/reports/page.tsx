@@ -258,7 +258,7 @@ export default function ReportsPage() {
       {/* Header */}
       <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">Report e Analisi</h1>
+          <h1 className="text-3xl font-bold tracking-tight">Report Strategici e Raccomandazioni</h1>
           <p className="text-muted-foreground">
             Genera report dettagliati con insights e raccomandazioni per migliorare le performance
           </p>
