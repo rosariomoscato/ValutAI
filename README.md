@@ -1,5 +1,7 @@
 # ValutAI
 
+![ValutAI App Screenshot](/public/screenshot-app.jpg)
+
 Piattaforma di intelligenza artificiale per la previsione della probabilità di successo dei preventivi dedicata alle PMI italiane.
 
 ## 🎯 Cos'è ValutAI
