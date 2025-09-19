@@ -692,7 +692,7 @@ export default function ReportsPage() {
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <FileText className="h-5 w-5" />
-            Report Basati su Singolo Modello Generati
+            Report per Modello
           </CardTitle>
           <CardDescription>
             Storico dei report creati
