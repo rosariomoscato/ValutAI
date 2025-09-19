@@ -7,7 +7,6 @@ import { Badge } from "@/components/ui/badge";
 import { 
   Lock, 
   User, 
-  Shield, 
   Download, 
   Trash2, 
   Users, 
@@ -32,9 +31,54 @@ import { useState } from "react";
 export default function SettingsPage() {
   const { data: session, isPending } = useSession();
   const [showAdvanced, setShowAdvanced] = useState(false);
+  const [isExporting, setIsExporting] = useState(false);
   
   const userRole = (session?.user as { role?: string })?.role || "viewer";
   const isOwner = userRole === "owner";
+
+  const handleExportData = async () => {
+    if (isExporting) return;
+    
+    setIsExporting(true);
+    
+    try {
+      const response = await fetch('/api/export/data', {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+      
+      if (!response.ok) {
+        throw new Error('Export failed');
+      }
+      
+      // Get the filename from the response headers
+      const contentDisposition = response.headers.get('Content-Disposition');
+      const filename = contentDisposition
+        ? contentDisposition.split('filename=')[1]?.replace(/['"]/g, '') || 'valutai_export.json'
+        : 'valutai_export.json';
+      
+      // Create blob and download
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.style.display = 'none';
+      a.href = url;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      window.URL.revokeObjectURL(url);
+      document.body.removeChild(a);
+      
+    } catch (error) {
+      console.error('Export error:', error);
+      // You could add a toast notification here
+      alert('Esportazione fallita. Riprova più tardi.');
+    } finally {
+      setIsExporting(false);
+    }
+  };
 
   if (isPending) {
     return (
@@ -133,61 +177,6 @@ export default function SettingsPage() {
         </CardContent>
       </Card>
 
-      {/* Sicurezza & Privacy */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Shield className="h-5 w-5" />
-            Sicurezza & Privacy
-          </CardTitle>
-          <CardDescription>
-            Gestisci la sicurezza e la privacy del tuo account
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-4">
-            {/* Google OAuth */}
-            <div className="flex items-center justify-between p-4 border rounded-lg">
-              <div>
-                <h4 className="font-medium">Autenticazione Google</h4>
-                <p className="text-sm text-muted-foreground">
-                  Account connesso con Google OAuth
-                </p>
-              </div>
-              <div className="flex items-center gap-2">
-                <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                <span className="text-sm text-green-600">Attivo</span>
-              </div>
-            </div>
-            
-            {/* Notifications */}
-            <div className="flex items-center justify-between p-4 border rounded-lg">
-              <div>
-                <h4 className="font-medium">Notifiche Email</h4>
-                <p className="text-sm text-muted-foreground">
-                  Ricevi notifiche importanti via email
-                </p>
-              </div>
-              <Button variant="outline" size="sm">
-                Configura
-              </Button>
-            </div>
-            
-            {/* Training Notifications */}
-            <div className="flex items-center justify-between p-4 border rounded-lg">
-              <div>
-                <h4 className="font-medium">Notifiche Training</h4>
-                <p className="text-sm text-muted-foreground">
-                  Avvisa quando il modello è pronto
-                </p>
-              </div>
-              <Button variant="outline" size="sm">
-                Configura
-              </Button>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
 
       {/* Team & Collaborazione */}
       {isOwner && (
@@ -269,9 +258,14 @@ export default function SettingsPage() {
                       Scarica tutti i tuoi dati in formato JSON
                     </p>
                   </div>
-                  <Button variant="outline" size="sm">
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    onClick={handleExportData}
+                    disabled={isExporting}
+                  >
                     <Download className="mr-2 h-4 w-4" />
-                    Esporta
+                    {isExporting ? 'Esportando...' : 'Esporta'}
                   </Button>
                 </div>
                 
