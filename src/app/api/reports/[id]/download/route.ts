@@ -300,7 +300,8 @@ export async function GET(
     </div>
 
     <div class="footer">
-        Report generato da ValutAI - Sistema di Previsione Successo Preventivi
+        Report generato da ValutAI - Sistema di Previsione Successo Preventivi<br>
+        © ${new Date().getFullYear()} ValutAI by RoMoS. Tutti i diritti riservati
     </div>
 </body>
 </html>

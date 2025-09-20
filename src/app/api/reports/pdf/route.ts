@@ -481,7 +481,7 @@ export async function GET(request: NextRequest) {
 
         <div class="footer">
             Report generato da ValutAI - Sistema di Previsione Successo Preventivi<br>
-            © ${new Date().getFullYear()} - Tutti i diritti riservati
+            © ${new Date().getFullYear()} ValutAI by RoMoS. Tutti i diritti riservati
         </div>
     </div>
 </body>

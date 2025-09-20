@@ -8,7 +8,9 @@ import {
   FileSpreadsheet, 
   Brain, 
   Target, 
-  BarChart3
+  BarChart3,
+  Coins,
+  CreditCard
 } from "lucide-react";
 
 export default function Home() {
@@ -30,6 +32,9 @@ export default function Home() {
               <p className="text-lg text-gray-500 dark:text-gray-400 max-w-2xl mx-auto">
                 Importa i tuoi dati storici, addestra un modello predittivo e ricevi raccomandazioni 
                 concrete per migliorare le performance di vendita
+              </p>
+              <p className="text-sm font-medium text-green-600 dark:text-green-400 max-w-2xl mx-auto">
+                ✓ Registrazione gratuita • 100 crediti di benvenuto inclusi
               </p>
             </div>
             <div className="flex flex-col sm:flex-row gap-4 justify-center items-center pt-8">
@@ -133,6 +138,119 @@ export default function Home() {
                   <p className="text-sm text-gray-600 dark:text-gray-300">
                     Insight azionabili e suggerimenti per migliorare il tasso di conversione
                   </p>
+                </CardContent>
+              </Card>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Credit Costs Section */}
+      <section className="py-20 bg-white dark:bg-gray-900">
+        <div className="container mx-auto px-4">
+          <div className="max-w-6xl mx-auto">
+            <div className="text-center mb-16">
+              <h2 className="text-3xl md:text-4xl font-bold mb-4">
+                Sistema Crediti e Costi
+              </h2>
+              <p className="text-lg text-gray-600 dark:text-gray-300 max-w-3xl mx-auto">
+                Gestisci i crediti in modo flessibile con welcome bonus e ricariche quando ne hai bisogno
+              </p>
+            </div>
+
+            <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
+              <Card className="text-center">
+                <CardHeader>
+                  <div className="w-12 h-12 bg-green-100 dark:bg-green-900 rounded-lg flex items-center justify-center mx-auto mb-4">
+                    <Coins className="h-6 w-6 text-green-600 dark:text-green-400" />
+                  </div>
+                  <CardTitle className="text-lg">Bonus di Benvenuto</CardTitle>
+                  <CardDescription>
+                    100 crediti gratuiti
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-sm text-gray-600 dark:text-gray-300">
+                    Ogni nuovo utente riceve 100 crediti gratuiti per iniziare subito
+                  </p>
+                </CardContent>
+              </Card>
+
+              <Card className="text-center">
+                <CardHeader>
+                  <div className="w-12 h-12 bg-blue-100 dark:bg-blue-900 rounded-lg flex items-center justify-center mx-auto mb-4">
+                    <Brain className="h-6 w-6 text-blue-600 dark:text-blue-400" />
+                  </div>
+                  <CardTitle className="text-lg">Addestramento Modello</CardTitle>
+                  <CardDescription>
+                    10 crediti
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-sm text-gray-600 dark:text-gray-300">
+                    Addestra il tuo modello predittivo personalizzato sui tuoi dati
+                  </p>
+                </CardContent>
+              </Card>
+
+              <Card className="text-center">
+                <CardHeader>
+                  <div className="w-12 h-12 bg-purple-100 dark:bg-purple-900 rounded-lg flex items-center justify-center mx-auto mb-4">
+                    <Target className="h-6 w-6 text-purple-600 dark:text-purple-400" />
+                  </div>
+                  <CardTitle className="text-lg">Previsioni</CardTitle>
+                  <CardDescription>
+                    2 crediti per previsione
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-sm text-gray-600 dark:text-gray-300">
+                    Calcola la probabilità di successo per ogni nuovo preventivo
+                  </p>
+                </CardContent>
+              </Card>
+
+              <Card className="text-center">
+                <CardHeader>
+                  <div className="w-12 h-12 bg-orange-100 dark:bg-orange-900 rounded-lg flex items-center justify-center mx-auto mb-4">
+                    <BarChart3 className="h-6 w-6 text-orange-600 dark:text-orange-400" />
+                  </div>
+                  <CardTitle className="text-lg">Report Dettagliati</CardTitle>
+                  <CardDescription>
+                    50 crediti
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-sm text-gray-600 dark:text-gray-300">
+                    Genera report completi con analisi e raccomandazioni strategiche
+                  </p>
+                </CardContent>
+              </Card>
+            </div>
+
+            <div className="mt-12 text-center">
+              <Card className="max-w-2xl mx-auto">
+                <CardHeader>
+                  <div className="w-12 h-12 bg-indigo-100 dark:bg-indigo-900 rounded-lg flex items-center justify-center mx-auto mb-4">
+                    <CreditCard className="h-6 w-6 text-indigo-600 dark:text-indigo-400" />
+                  </div>
+                  <CardTitle className="text-xl">Ricarica Crediti</CardTitle>
+                  <CardDescription>
+                    Sistema di ricarica flessibile
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-sm text-gray-600 dark:text-gray-300 mb-4">
+                    Quando i tuoi crediti terminano, puoi ricaricare facilmente dal tuo account dashboard. 
+                    Scegli tra diversi pacchetti in base alle tue esigenze di utilizzo.
+                  </p>
+                  <div className="flex justify-center gap-2">
+                    <Button asChild variant="outline">
+                      <Link href="/dashboard">
+                        Gestisci Crediti
+                      </Link>
+                    </Button>
+                  </div>
                 </CardContent>
               </Card>
             </div>
