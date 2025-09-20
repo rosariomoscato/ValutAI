@@ -4,7 +4,6 @@ import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Separator } from "@/components/ui/separator";
 import { 
   Coins, 
   TrendingUp, 
@@ -51,8 +50,35 @@ export function CreditsDashboard({
 }: CreditsDashboardProps) {
   const [credits, setCredits] = useState(initialCredits);
   const [packages] = useState(initialPackages);
-  const [transactions] = useState(initialTransactions);
+  const [transactions, setTransactions] = useState(initialTransactions);
   const [isLoading, setIsLoading] = useState(false);
+
+  // Update credits when initialCredits prop changes
+  useEffect(() => {
+    setCredits(initialCredits);
+  }, [initialCredits]);
+
+  // Update transactions when initialTransactions prop changes
+  useEffect(() => {
+    setTransactions(initialTransactions);
+  }, [initialTransactions]);
+
+  // Add event listener for credit updates
+  useEffect(() => {
+    const handleCreditUpdate = async () => {
+      try {
+        const response = await fetch('/api/credits');
+        const { credits: newCredits, transactions: newTransactions } = await response.json();
+        setCredits(newCredits);
+        setTransactions(newTransactions);
+      } catch (error) {
+        console.error('Error updating credits data:', error);
+      }
+    };
+
+    window.addEventListener('creditsUpdated', handleCreditUpdate);
+    return () => window.removeEventListener('creditsUpdated', handleCreditUpdate);
+  }, []);
 
   const handlePurchaseCredits = async (packageId: string) => {
     setIsLoading(true);
@@ -69,7 +95,7 @@ export function CreditsDashboard({
         throw new Error('Failed to create payment intent');
       }
 
-      const { clientSecret, amount, packageName } = await response.json();
+      const { clientSecret, packageName } = await response.json();
       
       const stripe = await stripePromise;
       if (!stripe) {
@@ -89,10 +115,11 @@ export function CreditsDashboard({
         throw error;
       }
 
-      // Refresh credits after successful payment
+      // Refresh credits and transactions after successful payment
       const creditsResponse = await fetch('/api/credits');
-      const { credits: newCredits } = await creditsResponse.json();
+      const { credits: newCredits, transactions: newTransactions } = await creditsResponse.json();
       setCredits(newCredits);
+      setTransactions(newTransactions);
 
       alert(`Successfully purchased ${packageName}!`);
     } catch (error) {

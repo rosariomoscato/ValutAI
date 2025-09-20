@@ -10,7 +10,8 @@ import {
   model, 
   prediction, 
   quote, 
-  report 
+  report,
+  deletedUserEmails
 } from '@/lib/schema';
 import { eq, inArray } from 'drizzle-orm';
 
@@ -25,6 +26,47 @@ export async function DELETE(request: NextRequest) {
     }
 
     const userId = session_data.user.id;
+    const userEmail = session_data.user.email;
+
+    // Get user's current credit status before deletion
+    const currentUser = await db
+      .select({
+        hasReceivedFreeCredits: user.hasReceivedFreeCredits,
+        previousEmailsForFreeCredits: user.previousEmailsForFreeCredits
+      })
+      .from(user)
+      .where(eq(user.id, userId))
+      .limit(1);
+
+    const userCreditInfo = currentUser[0];
+
+    // If user has received free credits, record their email for future reference
+    if (userCreditInfo?.hasReceivedFreeCredits) {
+      try {
+        // Check if email already exists in deleted emails table
+        const existingDeletedEmail = await db
+          .select({ email: deletedUserEmails.email })
+          .from(deletedUserEmails)
+          .where(eq(deletedUserEmails.email, userEmail))
+          .limit(1);
+
+        if (existingDeletedEmail.length === 0) {
+          // Only insert if email doesn't already exist
+          await db.insert(deletedUserEmails).values({
+            id: crypto.randomUUID(),
+            email: userEmail,
+            hasReceivedFreeCredits: true,
+            deletedAt: new Date(),
+          });
+          console.log(`[${new Date().toISOString()}] Email ${userEmail} recorded in deleted emails table`);
+        } else {
+          console.log(`[${new Date().toISOString()}] Email ${userEmail} already exists in deleted emails table, skipping insert`);
+        }
+      } catch (error) {
+        console.error(`[${new Date().toISOString()}] Error recording deleted email:`, error);
+        // Don't fail the entire deletion process if this step fails
+      }
+    }
 
     // Get all user's datasets to find related data
     const userDatasets = await db

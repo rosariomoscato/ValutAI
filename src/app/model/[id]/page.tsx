@@ -332,7 +332,7 @@ export default function ModelDetailPage() {
             Configurazione del Modello
           </CardTitle>
           <CardDescription>
-            Parametri e impostazioni utilizzate per l'addestramento
+            Parametri e impostazioni utilizzati per l&apos;addestramento
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -381,7 +381,7 @@ export default function ModelDetailPage() {
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Lightbulb className="h-5 w-5" />
-            Raccomandazioni per l'Uso
+            Raccomandazioni per l&apos;Uso
           </CardTitle>
           <CardDescription>
             Suggerimenti basati sulle performance del modello

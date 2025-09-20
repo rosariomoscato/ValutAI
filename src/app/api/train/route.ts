@@ -16,30 +16,28 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    // Check if user has enough credits for model training
-    const modelTrainingCost = await CreditsService.getOperationCost('model_training');
-    if (modelTrainingCost === null) {
-      // Try to initialize default operations if they don't exist
-      try {
-        await CreditsService.initializeDefaultOperations();
-        const retryCost = await CreditsService.getOperationCost('model_training');
-        if (retryCost === null) {
-          return NextResponse.json({ 
-            error: 'Sistema crediti non disponibile',
-            userMessage: 'Al momento non è possibile verificare i crediti. Riprova più tardi.' 
-          }, { status: 503 });
-        }
-      } catch (error) {
-        return NextResponse.json({ 
-          error: 'Sistema crediti non disponibile', 
-          userMessage: 'Al momento non è possibile verificare i crediti. Riprova più tardi.' 
-        }, { status: 503 });
-      }
+    // Check if credit system is properly configured
+    const isCreditSystemValid = await CreditsService.validateCreditSystem();
+    if (!isCreditSystemValid) {
+      console.log(`[${new Date().toISOString()}] Training failed for user ${session.user.id}: Credit system not configured`);
+      return NextResponse.json({ 
+        error: 'Sistema crediti non configurato',
+        userMessage: 'Il sistema di crediti non è disponibile. Contatta l\'amministratore.' 
+      }, { status: 503 });
     }
 
-    const hasEnoughCredits = await CreditsService.hasEnoughCredits(session.user.id, modelTrainingCost || 10);
+    // Check if user has enough credits for model training
+    const modelTrainingCost = await CreditsService.getOperationCost('model_training');
+    const userCredits = await CreditsService.getUserCredits(session.user.id);
+    const hasEnoughCredits = await CreditsService.hasEnoughCredits(session.user.id, modelTrainingCost);
+    
+    console.log(`[${new Date().toISOString()}] Training attempt by user ${session.user.id}:`);
+    console.log(`  - User credits: ${userCredits}`);
+    console.log(`  - Operation cost: ${modelTrainingCost}`);
+    console.log(`  - Has enough credits: ${hasEnoughCredits}`);
+    
     if (!hasEnoughCredits) {
-      const userCredits = await CreditsService.getUserCredits(session.user.id);
+      console.log(`[${new Date().toISOString()}] Training BLOCKED for user ${session.user.id}: Insufficient credits`);
       return NextResponse.json({ 
         error: 'Crediti insufficienti', 
         userMessage: `Crediti insufficienti per addestrare un modello. Richiesti ${modelTrainingCost} crediti, disponibili ${userCredits}.`,
@@ -49,6 +47,8 @@ export async function POST(request: NextRequest) {
         purchaseLink: '/credits'
       }, { status: 402 });
     }
+    
+    console.log(`[${new Date().toISOString()}] Training ALLOWED for user ${session.user.id}: Sufficient credits`);
 
     const { datasetId, algorithm = 'logistic_regression' } = await request.json();
 
@@ -182,18 +182,22 @@ export async function POST(request: NextRequest) {
       precision: Number(precision.toFixed(3)).toString(),
       recall: Number(recall.toFixed(3)).toString(),
       aucRoc: Number(aucRoc.toFixed(3)).toString(),
-      featureImportance: featureImportance as any,
-      hyperparameters: hyperparameters as any,
+      featureImportance: featureImportance,
+      hyperparameters: hyperparameters,
     }).returning({ id: model.id });
 
     // Deduct credits for model training
     const creditsDeducted = await CreditsService.deductCredits(
       session.user.id, 
-      modelTrainingCost || 10, 
+      modelTrainingCost, 
       `Model training: ${modelName}`,
       'model_training',
       modelResult[0].id
     );
+
+    // Trigger credit update event
+    const { triggerCreditUpdate } = await import('@/lib/credit-events');
+    triggerCreditUpdate();
 
     if (!creditsDeducted) {
       // Rollback - delete the model if credit deduction failed
@@ -203,6 +207,8 @@ export async function POST(request: NextRequest) {
       }, { status: 500 });
     }
 
+    const remainingCredits = await CreditsService.getUserCredits(session.user.id);
+    
     return NextResponse.json({ 
       success: true,
       modelId: modelResult[0].id,
@@ -214,7 +220,7 @@ export async function POST(request: NextRequest) {
         recall: Number(recall.toFixed(3)),
       },
       creditsDeducted: modelTrainingCost,
-      remainingCredits: await CreditsService.getUserCredits(session.user.id),
+      remainingCredits,
     });
 
   } catch (error) {

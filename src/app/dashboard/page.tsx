@@ -25,6 +25,31 @@ export default function DashboardPage() {
 
   const loadStats = async () => {
     try {
+      // Check user credits first
+      const creditsResponse = await fetch('/api/credits');
+      if (creditsResponse.ok) {
+        const creditsData = await creditsResponse.json();
+        
+        // Only try to grant welcome credits if user has 0 credits (truly new user)
+        if (creditsData.credits === 0) {
+          console.log(`User has ${creditsData.credits} credits, attempting to grant welcome credits...`);
+          try {
+            const grantResponse = await fetch('/api/credits/grant-free', {
+              method: 'POST',
+            });
+            
+            if (grantResponse.ok) {
+              const grantData = await grantResponse.json();
+              if (grantData.creditsGranted) {
+                console.log('Welcome credits granted successfully');
+              }
+            }
+          } catch (grantError) {
+            console.error('Error granting welcome credits:', grantError);
+          }
+        }
+      }
+
       // Carica dataset
       const datasetsResponse = await fetch('/api/datasets');
       const datasetsData = await datasetsResponse.json();

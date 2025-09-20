@@ -8,9 +8,11 @@ export const user = pgTable("user", {
   emailVerified: boolean("emailVerified"),
   image: text("image"),
   role: text("role").default("viewer").notNull(), // owner, analyst, viewer
-  credits: integer("credits").default(20).notNull(), // Starting credits for new users
+  credits: integer("credits").default(0).notNull(), // Starting credits for new users (0 + 50 welcome bonus)
   stripeCustomerId: text("stripeCustomerId"),
   stripeSubscriptionId: text("stripeSubscriptionId"),
+  hasReceivedFreeCredits: boolean("hasReceivedFreeCredits").default(false).notNull(), // Track if user received free credits
+  previousEmailsForFreeCredits: jsonb("previousEmailsForFreeCredits").default([]).notNull(), // Track emails that received free credits to prevent reuse
   createdAt: timestamp("createdAt").notNull().defaultNow(),
   updatedAt: timestamp("updatedAt").notNull().defaultNow(),
 });
@@ -217,4 +219,12 @@ export const creditOperation = pgTable("credit_operation", {
   
   createdAt: timestamp("createdAt").notNull().defaultNow(),
   updatedAt: timestamp("updatedAt").notNull().defaultNow(),
+});
+
+// Table to track emails that have received free credits to prevent reuse
+export const deletedUserEmails = pgTable("deleted_user_emails", {
+  id: text("id").primaryKey(),
+  email: text("email").notNull().unique(),
+  hasReceivedFreeCredits: boolean("hasReceivedFreeCredits").default(false).notNull(),
+  deletedAt: timestamp("deletedAt").notNull().defaultNow(),
 });

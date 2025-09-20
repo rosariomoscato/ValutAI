@@ -4,9 +4,9 @@ import { useSession } from "@/lib/auth-client";
 import { CreditsDashboard } from "@/components/credits/credits-dashboard";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Lock, ArrowLeft } from "lucide-react";
+import { Lock, ArrowLeft, RefreshCw } from "lucide-react";
 import Link from "next/link";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 
 interface CreditPackage {
   id: string;
@@ -38,17 +38,9 @@ export default function CreditsPage() {
   const [packages, setPackages] = useState<CreditPackage[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
-  useEffect(() => {
-    if (session) {
-      fetchCreditsData();
-      fetchCreditPackages();
-    } else if (!isPending) {
-      setIsLoading(false);
-    }
-  }, [session, isPending]);
-
-  const fetchCreditsData = async () => {
+  const fetchCreditsData = useCallback(async () => {
     try {
+      console.log('Fetching credits data...');
       const response = await fetch('/api/credits', {
         cache: 'no-store',
       });
@@ -58,14 +50,43 @@ export default function CreditsPage() {
       }
       
       const data = await response.json();
+      console.log('Credits data received:', data);
       setCreditsData(data);
+      
+      // Always try to fix user credits on page load to ensure they have the correct amount
+      console.log(`User has ${data.credits} credits, running credit fix check...`);
+      try {
+        const fixResponse = await fetch('/api/credits/fix-user-credits', {
+          method: 'POST',
+          cache: 'no-store',
+        });
+        
+        if (fixResponse.ok) {
+          const fixData = await fixResponse.json();
+          console.log('Credit fix response:', fixData);
+          if (fixData.fixed) {
+            console.log('User credits fixed, refreshing data...');
+            // Refresh credits data after fix
+            const refreshResponse = await fetch('/api/credits', {
+              cache: 'no-store',
+            });
+            if (refreshResponse.ok) {
+              const refreshData = await refreshResponse.json();
+              console.log('Refreshed credits data after fix:', refreshData);
+              setCreditsData(refreshData);
+            }
+          }
+        }
+      } catch (fixError) {
+        console.error('Error fixing user credits:', fixError);
+      }
     } catch (error) {
       console.error('Error fetching credits data:', error);
       setCreditsData({ credits: 0, transactions: [] });
     }
-  };
+  }, []);
 
-  const fetchCreditPackages = async () => {
+  const fetchCreditPackages = useCallback(async () => {
     try {
       const response = await fetch('/api/credits/packages', {
         cache: 'no-store',
@@ -83,7 +104,28 @@ export default function CreditsPage() {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, []);
+
+  useEffect(() => {
+    if (session) {
+      fetchCreditsData();
+      fetchCreditPackages();
+    } else if (!isPending) {
+      setIsLoading(false);
+    }
+  }, [session, isPending, fetchCreditsData, fetchCreditPackages]);
+
+  // Add event listener for credit updates
+  useEffect(() => {
+    const handleCreditUpdate = () => {
+      if (session) {
+        fetchCreditsData();
+      }
+    };
+
+    window.addEventListener('creditsUpdated', handleCreditUpdate);
+    return () => window.removeEventListener('creditsUpdated', handleCreditUpdate);
+  }, [session, fetchCreditsData]);
 
   if (isPending || isLoading) {
     return (
@@ -126,11 +168,25 @@ export default function CreditsPage() {
 
   return (
     <div className="container mx-auto py-8 px-4">
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold mb-2">Gestione Crediti</h1>
-        <p className="text-muted-foreground">
-          Acquista e gestisci i tuoi crediti per utilizzare tutte le funzionalità di ValutAI
-        </p>
+      <div className="mb-8 flex justify-between items-start">
+        <div>
+          <h1 className="text-3xl font-bold mb-2">Gestione Crediti</h1>
+          <p className="text-muted-foreground">
+            Acquista e gestisci i tuoi crediti per utilizzare tutte le funzionalità di ValutAI
+          </p>
+          <div className="mt-2 text-sm text-blue-600">
+            Debug: Credits from API: {creditsData.credits} | Loading: {isLoading ? 'Yes' : 'No'}
+          </div>
+        </div>
+        <Button 
+          onClick={fetchCreditsData} 
+          variant="outline" 
+          size="sm"
+          disabled={isLoading}
+        >
+          <RefreshCw className={`h-4 w-4 mr-2 ${isLoading ? 'animate-spin' : ''}`} />
+          Aggiorna
+        </Button>
       </div>
       
       <CreditsDashboard 

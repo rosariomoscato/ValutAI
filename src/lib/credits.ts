@@ -26,7 +26,12 @@ export class CreditsService {
       .where(eq(user.id, userId))
       .limit(1);
 
-    return userRecord[0]?.credits || 0;
+    const credits = userRecord[0]?.credits || 0;
+    console.log(`[${new Date().toISOString()}] getUserCredits for user ${userId}:`);
+    console.log(`  - Database record:`, userRecord[0]);
+    console.log(`  - Credits returned: ${credits}`);
+    
+    return credits;
   }
 
   static async hasEnoughCredits(userId: string, requiredCredits: number): Promise<boolean> {
@@ -174,10 +179,32 @@ export class CreditsService {
       .where(eq(creditOperation.isActive, true));
   }
 
-  static async getOperationCost(operationType: string): Promise<number | null> {
+  static async getOperationCost(operationType: string): Promise<number> {
     const operations = await this.getOperationCosts();
     const operation = operations.find(op => op.id === operationType);
-    return operation?.creditCost || null;
+    
+    if (!operation) {
+      throw new Error(`Operation type '${operationType}' not found in credit system`);
+    }
+    
+    return operation.creditCost;
+  }
+
+  static async validateCreditSystem(): Promise<boolean> {
+    try {
+      const operations = await this.getOperationCosts();
+      const requiredOperations = ['dataset_upload', 'model_training', 'prediction', 'report_generation'];
+      
+      for (const op of requiredOperations) {
+        if (!operations.find(o => o.id === op)) {
+          return false;
+        }
+      }
+      return true;
+    } catch (error) {
+      console.error('Credit system validation failed:', error);
+      return false;
+    }
   }
 
   static async initializeDefaultOperations() {

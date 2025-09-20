@@ -22,6 +22,13 @@
       "when": 1758383045125,
       "tag": "0002_crazy_doomsday",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1758395235485,
+      "tag": "0003_strange_goblin_queen",
+      "breakpoints": true
     }
   ]
 }

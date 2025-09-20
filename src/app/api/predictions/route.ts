@@ -155,8 +155,8 @@ export async function POST(request: NextRequest) {
       leadSource: formData.leadSource || null,
       winProbability: probability.toString(),
       confidence: confidence.toString(),
-      featureContributions: factors as any,
-      recommendations: recommendations as any,
+      featureContributions: factors as unknown as Record<string, unknown>,
+      recommendations: recommendations as unknown as Record<string, unknown>,
     }).returning();
 
     // Deduct credits for prediction
@@ -167,6 +167,10 @@ export async function POST(request: NextRequest) {
       'prediction',
       predictionResult[0].id
     );
+
+    // Trigger credit update event
+    const { triggerCreditUpdate } = await import('@/lib/credit-events');
+    triggerCreditUpdate();
 
     if (!creditsDeducted) {
       // Rollback - delete the prediction if credit deduction failed

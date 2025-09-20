@@ -44,11 +44,11 @@ export async function GET(request: NextRequest) {
           accuracy: Number(m.accuracy || 0),
           precision: Number(m.precision || 0),
           recall: Number(m.recall || 0),
-          trainingSize: (m.hyperparameters as any)?.trainingSize || 0,
-          validationSize: (m.hyperparameters as any)?.validationSize || 0,
+          trainingSize: (m.hyperparameters as Record<string, unknown>)?.trainingSize as number || 0,
+          validationSize: (m.hyperparameters as Record<string, unknown>)?.validationSize as number || 0,
         },
-        featureImportance: m.featureImportance as any,
-        hyperparameters: m.hyperparameters as any,
+        featureImportance: m.featureImportance as Record<string, unknown>,
+        hyperparameters: m.hyperparameters as Record<string, unknown>,
       }))
     });
 

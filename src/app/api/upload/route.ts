@@ -16,30 +16,28 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    // Check if user has enough credits for dataset upload
-    const datasetUploadCost = await CreditsService.getOperationCost('dataset_upload');
-    if (datasetUploadCost === null) {
-      // Try to initialize default operations if they don't exist
-      try {
-        await CreditsService.initializeDefaultOperations();
-        const retryCost = await CreditsService.getOperationCost('dataset_upload');
-        if (retryCost === null) {
-          return NextResponse.json({ 
-            error: 'Sistema crediti non disponibile',
-            userMessage: 'Al momento non è possibile verificare i crediti. Riprova più tardi.' 
-          }, { status: 503 });
-        }
-      } catch (error) {
-        return NextResponse.json({ 
-          error: 'Sistema crediti non disponibile', 
-          userMessage: 'Al momento non è possibile verificare i crediti. Riprova più tardi.' 
-        }, { status: 503 });
-      }
+    // Check if credit system is properly configured
+    const isCreditSystemValid = await CreditsService.validateCreditSystem();
+    if (!isCreditSystemValid) {
+      console.log(`[${new Date().toISOString()}] Upload failed for user ${session.user.id}: Credit system not configured`);
+      return NextResponse.json({ 
+        error: 'Sistema crediti non configurato',
+        userMessage: 'Il sistema di crediti non è disponibile. Contatta l\'amministratore.' 
+      }, { status: 503 });
     }
 
-    const hasEnoughCredits = await CreditsService.hasEnoughCredits(session.user.id, datasetUploadCost || 10);
+    // Check if user has enough credits for dataset upload
+    const datasetUploadCost = await CreditsService.getOperationCost('dataset_upload');
+    const userCredits = await CreditsService.getUserCredits(session.user.id);
+    const hasEnoughCredits = await CreditsService.hasEnoughCredits(session.user.id, datasetUploadCost);
+    
+    console.log(`[${new Date().toISOString()}] Upload attempt by user ${session.user.id}:`);
+    console.log(`  - User credits: ${userCredits}`);
+    console.log(`  - Operation cost: ${datasetUploadCost}`);
+    console.log(`  - Has enough credits: ${hasEnoughCredits}`);
+    
     if (!hasEnoughCredits) {
-      const userCredits = await CreditsService.getUserCredits(session.user.id);
+      console.log(`[${new Date().toISOString()}] Upload BLOCKED for user ${session.user.id}: Insufficient credits`);
       return NextResponse.json({ 
         error: 'Crediti insufficienti', 
         userMessage: `Crediti insufficienti per caricare un dataset. Richiesti ${datasetUploadCost} crediti, disponibili ${userCredits}.`,
@@ -49,6 +47,8 @@ export async function POST(request: NextRequest) {
         purchaseLink: '/credits'
       }, { status: 402 });
     }
+    
+    console.log(`[${new Date().toISOString()}] Upload ALLOWED for user ${session.user.id}: Sufficient credits`);
 
     const formData = await request.formData();
     const file = formData.get('file') as File;
@@ -145,11 +145,15 @@ export async function POST(request: NextRequest) {
     // Deduct credits for dataset upload
     const creditsDeducted = await CreditsService.deductCredits(
       session.user.id, 
-      datasetUploadCost || 10, 
+      datasetUploadCost, 
       `Dataset upload: ${file.name}`,
       'dataset_upload',
       datasetId
     );
+
+    // Trigger credit update event
+    const { triggerCreditUpdate } = await import('@/lib/credit-events');
+    triggerCreditUpdate();
 
     if (!creditsDeducted) {
       // Rollback - delete the dataset and quotes if credit deduction failed
@@ -160,13 +164,15 @@ export async function POST(request: NextRequest) {
       }, { status: 500 });
     }
 
+    const remainingCredits = await CreditsService.getUserCredits(session.user.id);
+    
     return NextResponse.json({ 
       success: true, 
       message: `File "${file.name}" uploaded successfully. Processed ${data.length} records.`,
       datasetId,
       recordCount: data.length,
       creditsDeducted: datasetUploadCost,
-      remainingCredits: await CreditsService.getUserCredits(session.user.id),
+      remainingCredits,
     });
 
   } catch (error) {

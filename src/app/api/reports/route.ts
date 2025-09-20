@@ -177,8 +177,8 @@ export async function POST(request: NextRequest) {
       id: crypto.randomUUID(),
       modelId: modelId,
       title: `Report ${new Date().toLocaleDateString('it-IT')} - ${modelRecord[0].name}`,
-      content: reportContent as any,
-      insights: insights as any,
+      content: reportContent as Record<string, unknown>,
+      insights: insights as Record<string, unknown>,
     }).returning();
 
     // Deduct credits for report generation
@@ -189,6 +189,10 @@ export async function POST(request: NextRequest) {
       'report',
       reportResult[0].id
     );
+
+    // Trigger credit update event
+    const { triggerCreditUpdate } = await import('@/lib/credit-events');
+    triggerCreditUpdate();
 
     if (!creditsDeducted) {
       // Rollback - delete the report if credit deduction failed
