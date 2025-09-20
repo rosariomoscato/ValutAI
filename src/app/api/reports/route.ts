@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@/lib/auth';
 import { db } from '@/lib/db';
+import { CreditsService } from '@/lib/credits';
 import { report, model } from '@/lib/schema';
 import { eq, and, desc } from 'drizzle-orm';
 
@@ -48,6 +49,40 @@ export async function POST(request: NextRequest) {
     
     if (!session?.user?.id) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    // Check if user has enough credits for report generation (50 credits per report)
+    const reportCost = await CreditsService.getOperationCost('report');
+    if (reportCost === null) {
+      // Try to initialize default operations if they don't exist
+      try {
+        await CreditsService.initializeDefaultOperations();
+        const retryCost = await CreditsService.getOperationCost('report');
+        if (retryCost === null) {
+          return NextResponse.json({ 
+            error: 'Sistema crediti non disponibile',
+            userMessage: 'Al momento non è possibile verificare i crediti. Riprova più tardi.' 
+          }, { status: 503 });
+        }
+      } catch (error) {
+        return NextResponse.json({ 
+          error: 'Sistema crediti non disponibile', 
+          userMessage: 'Al momento non è possibile verificare i crediti. Riprova più tardi.' 
+        }, { status: 503 });
+      }
+    }
+
+    const hasEnoughCredits = await CreditsService.hasEnoughCredits(session.user.id, reportCost || 50);
+    if (!hasEnoughCredits) {
+      const userCredits = await CreditsService.getUserCredits(session.user.id);
+      return NextResponse.json({ 
+        error: 'Crediti insufficienti', 
+        userMessage: `Crediti insufficienti per generare un report. Richiesti ${reportCost || 50} crediti, disponibili ${userCredits}.`,
+        requiredCredits: reportCost || 50,
+        availableCredits: userCredits,
+        actionNeeded: 'Ricarica i tuoi crediti per continuare',
+        purchaseLink: '/credits'
+      }, { status: 402 });
     }
 
     const { modelId } = await request.json();
@@ -145,6 +180,23 @@ export async function POST(request: NextRequest) {
       content: reportContent as any,
       insights: insights as any,
     }).returning();
+
+    // Deduct credits for report generation
+    const creditsDeducted = await CreditsService.deductCredits(
+      session.user.id, 
+      reportCost || 50, 
+      `Report generation for model ${modelId}`,
+      'report',
+      reportResult[0].id
+    );
+
+    if (!creditsDeducted) {
+      // Rollback - delete the report if credit deduction failed
+      await db.delete(report).where(eq(report.id, reportResult[0].id));
+      return NextResponse.json({ 
+        error: 'Failed to deduct credits. Please try again.' 
+      }, { status: 500 });
+    }
 
     return NextResponse.json({
       id: reportResult[0].id,

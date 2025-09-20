@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@/lib/auth';
 import { db } from '@/lib/db';
+import { CreditsService } from '@/lib/credits';
 import { model, dataset, quote } from '@/lib/schema';
 import { eq, and } from 'drizzle-orm';
 import { sql } from 'drizzle-orm';
@@ -13,6 +14,40 @@ export async function POST(request: NextRequest) {
     
     if (!session?.user?.id) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    // Check if user has enough credits for model training
+    const modelTrainingCost = await CreditsService.getOperationCost('model_training');
+    if (modelTrainingCost === null) {
+      // Try to initialize default operations if they don't exist
+      try {
+        await CreditsService.initializeDefaultOperations();
+        const retryCost = await CreditsService.getOperationCost('model_training');
+        if (retryCost === null) {
+          return NextResponse.json({ 
+            error: 'Sistema crediti non disponibile',
+            userMessage: 'Al momento non è possibile verificare i crediti. Riprova più tardi.' 
+          }, { status: 503 });
+        }
+      } catch (error) {
+        return NextResponse.json({ 
+          error: 'Sistema crediti non disponibile', 
+          userMessage: 'Al momento non è possibile verificare i crediti. Riprova più tardi.' 
+        }, { status: 503 });
+      }
+    }
+
+    const hasEnoughCredits = await CreditsService.hasEnoughCredits(session.user.id, modelTrainingCost || 10);
+    if (!hasEnoughCredits) {
+      const userCredits = await CreditsService.getUserCredits(session.user.id);
+      return NextResponse.json({ 
+        error: 'Crediti insufficienti', 
+        userMessage: `Crediti insufficienti per addestrare un modello. Richiesti ${modelTrainingCost} crediti, disponibili ${userCredits}.`,
+        requiredCredits: modelTrainingCost,
+        availableCredits: userCredits,
+        actionNeeded: 'Ricarica i tuoi crediti per continuare',
+        purchaseLink: '/credits'
+      }, { status: 402 });
     }
 
     const { datasetId, algorithm = 'logistic_regression' } = await request.json();
@@ -151,6 +186,23 @@ export async function POST(request: NextRequest) {
       hyperparameters: hyperparameters as any,
     }).returning({ id: model.id });
 
+    // Deduct credits for model training
+    const creditsDeducted = await CreditsService.deductCredits(
+      session.user.id, 
+      modelTrainingCost || 10, 
+      `Model training: ${modelName}`,
+      'model_training',
+      modelResult[0].id
+    );
+
+    if (!creditsDeducted) {
+      // Rollback - delete the model if credit deduction failed
+      await db.delete(model).where(eq(model.id, modelResult[0].id));
+      return NextResponse.json({ 
+        error: 'Failed to deduct credits. Please try again.' 
+      }, { status: 500 });
+    }
+
     return NextResponse.json({ 
       success: true,
       modelId: modelResult[0].id,
@@ -161,6 +213,8 @@ export async function POST(request: NextRequest) {
         precision: Number(precision.toFixed(3)),
         recall: Number(recall.toFixed(3)),
       },
+      creditsDeducted: modelTrainingCost,
+      remainingCredits: await CreditsService.getUserCredits(session.user.id),
     });
 
   } catch (error) {

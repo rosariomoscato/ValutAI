@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useSession } from "@/lib/auth-client";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { UserProfile } from "@/components/auth/user-profile";
@@ -14,11 +15,12 @@ import {
   BarChart3, 
   Settings,
   Menu,
-  X
+  X,
+  Coins
 } from "lucide-react";
 import { useState, useCallback, useEffect } from "react";
 
-const navigation = [
+const publicNavigation = [
   { name: "Dashboard", href: "/dashboard", icon: TrendingUp },
   { name: "Dati", href: "/data", icon: FileSpreadsheet },
   { name: "Modello", href: "/model", icon: Brain },
@@ -27,9 +29,23 @@ const navigation = [
   { name: "Impostazioni", href: "/settings", icon: Settings },
 ];
 
+const authenticatedNavigation = [
+  { name: "Dashboard", href: "/dashboard", icon: TrendingUp },
+  { name: "Dati", href: "/data", icon: FileSpreadsheet },
+  { name: "Modello", href: "/model", icon: Brain },
+  { name: "Scoring", href: "/scoring", icon: Target },
+  { name: "Report", href: "/reports", icon: BarChart3 },
+  { name: "Crediti", href: "/credits", icon: Coins },
+  { name: "Impostazioni", href: "/settings", icon: Settings },
+];
+
 export function SiteHeader() {
   const pathname = usePathname();
+  const { data: session } = useSession();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+
+  // Choose navigation based on authentication status
+  const navigation = session ? authenticatedNavigation : publicNavigation;
 
   const closeMobileMenu = useCallback(() => {
     setMobileMenuOpen(false);

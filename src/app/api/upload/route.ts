@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@/lib/auth';
 import { db } from '@/lib/db';
+import { CreditsService } from '@/lib/credits';
 import { dataset, quote } from '@/lib/schema';
 import { eq } from 'drizzle-orm';
 import { sql } from 'drizzle-orm';
@@ -13,6 +14,40 @@ export async function POST(request: NextRequest) {
     
     if (!session?.user?.id) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    // Check if user has enough credits for dataset upload
+    const datasetUploadCost = await CreditsService.getOperationCost('dataset_upload');
+    if (datasetUploadCost === null) {
+      // Try to initialize default operations if they don't exist
+      try {
+        await CreditsService.initializeDefaultOperations();
+        const retryCost = await CreditsService.getOperationCost('dataset_upload');
+        if (retryCost === null) {
+          return NextResponse.json({ 
+            error: 'Sistema crediti non disponibile',
+            userMessage: 'Al momento non è possibile verificare i crediti. Riprova più tardi.' 
+          }, { status: 503 });
+        }
+      } catch (error) {
+        return NextResponse.json({ 
+          error: 'Sistema crediti non disponibile', 
+          userMessage: 'Al momento non è possibile verificare i crediti. Riprova più tardi.' 
+        }, { status: 503 });
+      }
+    }
+
+    const hasEnoughCredits = await CreditsService.hasEnoughCredits(session.user.id, datasetUploadCost || 10);
+    if (!hasEnoughCredits) {
+      const userCredits = await CreditsService.getUserCredits(session.user.id);
+      return NextResponse.json({ 
+        error: 'Crediti insufficienti', 
+        userMessage: `Crediti insufficienti per caricare un dataset. Richiesti ${datasetUploadCost} crediti, disponibili ${userCredits}.`,
+        requiredCredits: datasetUploadCost,
+        availableCredits: userCredits,
+        actionNeeded: 'Ricarica i tuoi crediti per continuare',
+        purchaseLink: '/credits'
+      }, { status: 402 });
     }
 
     const formData = await request.formData();
@@ -107,11 +142,31 @@ export async function POST(request: NextRequest) {
 
     await db.insert(quote).values(quotesToInsert);
 
+    // Deduct credits for dataset upload
+    const creditsDeducted = await CreditsService.deductCredits(
+      session.user.id, 
+      datasetUploadCost || 10, 
+      `Dataset upload: ${file.name}`,
+      'dataset_upload',
+      datasetId
+    );
+
+    if (!creditsDeducted) {
+      // Rollback - delete the dataset and quotes if credit deduction failed
+      await db.delete(quote).where(eq(quote.datasetId, datasetId));
+      await db.delete(dataset).where(eq(dataset.id, datasetId));
+      return NextResponse.json({ 
+        error: 'Failed to deduct credits. Please try again.' 
+      }, { status: 500 });
+    }
+
     return NextResponse.json({ 
       success: true, 
       message: `File "${file.name}" uploaded successfully. Processed ${data.length} records.`,
       datasetId,
       recordCount: data.length,
+      creditsDeducted: datasetUploadCost,
+      remainingCredits: await CreditsService.getUserCredits(session.user.id),
     });
 
   } catch (error) {

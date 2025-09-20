@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@/lib/auth';
 import { db } from '@/lib/db';
+import { CreditsService } from '@/lib/credits';
 import { prediction, model } from '@/lib/schema';
 import { eq, and } from 'drizzle-orm';
 
@@ -12,6 +13,40 @@ export async function POST(request: NextRequest) {
     
     if (!session?.user?.id) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    // Check if user has enough credits for prediction (2 credits per prediction)
+    const predictionCost = await CreditsService.getOperationCost('prediction');
+    if (predictionCost === null) {
+      // Try to initialize default operations if they don't exist
+      try {
+        await CreditsService.initializeDefaultOperations();
+        const retryCost = await CreditsService.getOperationCost('prediction');
+        if (retryCost === null) {
+          return NextResponse.json({ 
+            error: 'Sistema crediti non disponibile',
+            userMessage: 'Al momento non è possibile verificare i crediti. Riprova più tardi.' 
+          }, { status: 503 });
+        }
+      } catch (error) {
+        return NextResponse.json({ 
+          error: 'Sistema crediti non disponibile', 
+          userMessage: 'Al momento non è possibile verificare i crediti. Riprova più tardi.' 
+        }, { status: 503 });
+      }
+    }
+
+    const hasEnoughCredits = await CreditsService.hasEnoughCredits(session.user.id, predictionCost || 2);
+    if (!hasEnoughCredits) {
+      const userCredits = await CreditsService.getUserCredits(session.user.id);
+      return NextResponse.json({ 
+        error: 'Crediti insufficienti', 
+        userMessage: `Crediti insufficienti per effettuare una predizione. Richiesti ${predictionCost || 2} crediti, disponibili ${userCredits}.`,
+        requiredCredits: predictionCost || 2,
+        availableCredits: userCredits,
+        actionNeeded: 'Ricarica i tuoi crediti per continuare',
+        purchaseLink: '/credits'
+      }, { status: 402 });
     }
 
     const { formData, modelId } = await request.json();
@@ -123,6 +158,23 @@ export async function POST(request: NextRequest) {
       featureContributions: factors as any,
       recommendations: recommendations as any,
     }).returning();
+
+    // Deduct credits for prediction
+    const creditsDeducted = await CreditsService.deductCredits(
+      session.user.id, 
+      predictionCost || 2, 
+      `Prediction for model ${modelId}`,
+      'prediction',
+      predictionResult[0].id
+    );
+
+    if (!creditsDeducted) {
+      // Rollback - delete the prediction if credit deduction failed
+      await db.delete(prediction).where(eq(prediction.id, predictionResult[0].id));
+      return NextResponse.json({ 
+        error: 'Failed to deduct credits. Please try again.' 
+      }, { status: 500 });
+    }
 
     return NextResponse.json({
       successProbability: probability,

@@ -8,6 +8,9 @@ export const user = pgTable("user", {
   emailVerified: boolean("emailVerified"),
   image: text("image"),
   role: text("role").default("viewer").notNull(), // owner, analyst, viewer
+  credits: integer("credits").default(20).notNull(), // Starting credits for new users
+  stripeCustomerId: text("stripeCustomerId"),
+  stripeSubscriptionId: text("stripeSubscriptionId"),
   createdAt: timestamp("createdAt").notNull().defaultNow(),
   updatedAt: timestamp("updatedAt").notNull().defaultNow(),
 });
@@ -168,6 +171,49 @@ export const report = pgTable("report", {
   title: text("title").notNull(),
   content: jsonb("content").notNull(), // Report sections and data
   insights: jsonb("insights").notNull(), // Key findings and recommendations
+  
+  createdAt: timestamp("createdAt").notNull().defaultNow(),
+  updatedAt: timestamp("updatedAt").notNull().defaultNow(),
+});
+
+// Credits System tables
+export const creditTransaction = pgTable("credit_transaction", {
+  id: text("id").primaryKey(),
+  userId: text("userId")
+    .notNull()
+    .references(() => user.id, { onDelete: "cascade" }),
+  
+  type: text("type").notNull(), // 'purchase', 'usage', 'refund', 'bonus'
+  amount: integer("amount").notNull(), // Positive for purchases/refunds, negative for usage
+  balance: integer("balance").notNull(), // Balance after transaction
+  description: text("description").notNull(),
+  operationType: text("operationType"), // 'dataset_upload', 'model_training', 'prediction', 'report_generation', 'credit_purchase'
+  resourceId: text("resourceId"), // ID of related resource (dataset, model, etc.)
+  
+  createdAt: timestamp("createdAt").notNull().defaultNow(),
+});
+
+export const creditPackage = pgTable("credit_package", {
+  id: text("id").primaryKey(),
+  name: text("name").notNull(),
+  credits: integer("credits").notNull(),
+  price: numeric("price").notNull(), // In euros
+  currency: text("currency").default("EUR").notNull(),
+  stripePriceId: text("stripePriceId"),
+  isActive: boolean("isActive").default(true).notNull(),
+  isPopular: boolean("isPopular").default(false).notNull(),
+  sortOrder: integer("sortOrder").default(0).notNull(),
+  
+  createdAt: timestamp("createdAt").notNull().defaultNow(),
+  updatedAt: timestamp("updatedAt").notNull().defaultNow(),
+});
+
+export const creditOperation = pgTable("credit_operation", {
+  id: text("id").primaryKey(),
+  name: text("name").notNull(),
+  description: text("description").notNull(),
+  creditCost: integer("creditCost").notNull(),
+  isActive: boolean("isActive").default(true).notNull(),
   
   createdAt: timestamp("createdAt").notNull().defaultNow(),
   updatedAt: timestamp("updatedAt").notNull().defaultNow(),

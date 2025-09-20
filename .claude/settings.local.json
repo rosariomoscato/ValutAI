@@ -21,7 +21,14 @@
       "Bash(git remote set-url:*)",
       "Bash(git push:*)",
       "mcp__shadcn__view_items_in_registries",
-      "WebSearch"
+      "WebSearch",
+      "Bash(npx drizzle-kit generate:*)",
+      "Bash(npx drizzle-kit push:*)",
+      "Bash(npx ts-node:*)",
+      "Bash(find:*)",
+      "Bash(curl:*)",
+      "Bash(psql:*)",
+      "Bash(node:*)"
     ],
     "additionalDirectories": [
       "C:\\c\\Projects\\nextjs-better-auth-postgresql-starter-kit"
