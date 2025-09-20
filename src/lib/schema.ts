@@ -8,7 +8,7 @@ export const user = pgTable("user", {
   emailVerified: boolean("emailVerified"),
   image: text("image"),
   role: text("role").default("viewer").notNull(), // owner, analyst, viewer
-  credits: integer("credits").default(0).notNull(), // Starting credits for new users (0 + 50 welcome bonus)
+  credits: integer("credits").default(0).notNull(), // Starting credits for new users (0 + 100 welcome bonus)
   stripeCustomerId: text("stripeCustomerId"),
   stripeSubscriptionId: text("stripeSubscriptionId"),
   hasReceivedFreeCredits: boolean("hasReceivedFreeCredits").default(false).notNull(), // Track if user received free credits

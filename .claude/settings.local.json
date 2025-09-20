@@ -31,7 +31,8 @@
       "Bash(node:*)",
       "Bash(npx drizzle-kit studio:dump:*)",
       "Bash(npx drizzle-kit migrate:*)",
-      "Bash(npx drizzle-kit studio:*)"
+      "Bash(npx drizzle-kit studio:*)",
+      "Bash(npx tsx:*)"
     ],
     "additionalDirectories": [
       "C:\\c\\Projects\\nextjs-better-auth-postgresql-starter-kit"

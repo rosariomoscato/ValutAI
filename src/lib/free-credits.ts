@@ -25,7 +25,7 @@ export class FreeCreditsService {
         return false;
       }
 
-      // Check if user already has 50 credits
+      // Check if user already has 100 credits
       const currentUser = await db
         .select({ credits: user.credits, hasReceivedFreeCredits: user.hasReceivedFreeCredits })
         .from(user)
@@ -46,11 +46,11 @@ export class FreeCreditsService {
       }
 
       try {
-        // Always grant exactly 50 welcome credits
-        console.log(`[${new Date().toISOString()}] Granting 50 welcome credits to user ${userEmail}`);
+        // Always grant exactly 100 welcome credits
+        console.log(`[${new Date().toISOString()}] Granting 100 welcome credits to user ${userEmail}`);
 
-      // Update user credits (add 50 to current balance)
-      const newCreditTotal = currentCredits + 50;
+      // Update user credits (add 100 to current balance)
+      const newCreditTotal = currentCredits + 100;
       await db
         .update(user)
         .set({ 
@@ -65,9 +65,9 @@ export class FreeCreditsService {
         id: crypto.randomUUID(),
         userId: userId,
         type: 'bonus',
-        amount: 50,
+        amount: 100,
         balance: newCreditTotal,
-        description: `50 crediti gratuiti di benvenuto`,
+        description: `100 crediti gratuiti di benvenuto`,
         operationType: 'welcome_bonus',
         createdAt: new Date(),
       });
@@ -77,7 +77,7 @@ export class FreeCreditsService {
           window.dispatchEvent(new Event('creditsUpdated'));
         }
 
-        console.log(`[${new Date().toISOString()}] Successfully granted 50 welcome credits to user ${userEmail} (total: ${newCreditTotal})`);
+        console.log(`[${new Date().toISOString()}] Successfully granted 100 welcome credits to user ${userEmail} (total: ${newCreditTotal})`);
         return true;
       } catch (error) {
         console.error(`[${new Date().toISOString()}] Error granting welcome credits to user ${userId}:`, error);
@@ -92,7 +92,7 @@ export class FreeCreditsService {
   }
 
   /**
-   * Ensures a user has at least 50 credits
+   * Ensures a user has at least 100 credits
    * Can be called as a safety check
    */
   static async ensureMinimumCredits(userId: string) {
@@ -109,7 +109,7 @@ export class FreeCreditsService {
 
       const { credits: currentCredits, email, hasReceivedFreeCredits } = currentUser[0];
 
-      if (currentCredits < 50 && !hasReceivedFreeCredits) {
+      if (currentCredits < 100 && !hasReceivedFreeCredits) {
         console.log(`[${new Date().toISOString()}] User ${email} has only ${currentCredits} credits and hasn't received welcome bonus yet`);
         return await this.grantWelcomeCredits(userId, email);
       }

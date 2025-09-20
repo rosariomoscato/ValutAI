@@ -281,7 +281,7 @@ export function CreditsDashboard({
                 <History className="h-4 w-4 text-orange-600" />
                 <span>Generazione Report</span>
               </div>
-              <Badge variant="secondary">50 crediti</Badge>
+              <Badge variant="secondary">100 crediti</Badge>
             </div>
           </div>
         </CardContent>

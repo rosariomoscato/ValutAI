@@ -33,6 +33,7 @@ interface Report {
   title: string;
   createdAt: Date | string;
   modelName?: string;
+  insights?: Record<string, unknown>;
 }
 
 export default function ReportsPage() {
@@ -108,6 +109,29 @@ export default function ReportsPage() {
   }, [session, loadData]);
 
   const hasData = datasets.length > 0 && models.length > 0;
+  const hasReports = reports.length > 0;
+
+  // Get insights from the latest report if available
+  const latestReport = reports.length > 0 ? reports[0] : null;
+  const latestReportInsights = latestReport?.insights as {
+  performance?: {
+    accuracy: number;
+    precision: number;
+    recall: number;
+    aucRoc: number;
+  };
+  keyMetrics?: {
+    performanceScore?: number;
+    averageWinProbability?: number;
+    topPerformingSector?: string;
+    optimalPriceRange?: string;
+  };
+  recommendations?: {
+    immediate?: string[];
+    strategic?: string[];
+    longTerm?: string[];
+  };
+} || null;
 
   const downloadReport = async (reportId: string, reportTitle: string) => {
     setDownloadingReport(reportId);
@@ -263,7 +287,7 @@ export default function ReportsPage() {
             Genera report dettagliati con insights e raccomandazioni per migliorare le performance
           </p>
         </div>
-        <Button onClick={exportPDF} disabled={generatingPDF}>
+        <Button onClick={exportPDF} disabled={generatingPDF || !hasReports}>
           {generatingPDF ? (
             <>
               <div className="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-primary border-t-transparent"></div>
@@ -562,54 +586,86 @@ export default function ReportsPage() {
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
             <div className="p-4 border rounded-lg">
               <h4 className="font-medium mb-2">Win Drivers</h4>
-              {hasData ? (
+              {hasReports ? (
                 <ul className="space-y-1 text-sm text-green-600 dark:text-green-300">
-                  <li>• Prezzi tra €10K-€50K hanno successo più alto</li>
-                  <li>• Sconti sotto il 15% migliorano le performance</li>
-                  <li>• Tempi di consegna entro 30 giorni ottimali</li>
-                  <li>• Clienti tecnologia mostrano tasso migliore</li>
+                  {latestReportInsights?.recommendations?.immediate?.slice(0, 4).map((item: string, index: number) => (
+                    <li key={index}>• {item}</li>
+                  )) || [
+                    <li key="1">• Prezzi tra €10K-€50K hanno successo più alto</li>,
+                    <li key="2">• Sconti sotto il 15% migliorano le performance</li>,
+                    <li key="3">• Tempi di consegna entro 30 giorni ottimali</li>,
+                    <li key="4">• Clienti tecnologia mostrano tasso migliore</li>
+                  ]}
                 </ul>
               ) : (
                 <ul className="space-y-1 text-sm text-gray-600 dark:text-gray-300">
-                  <li>• Analisi non disponibile</li>
-                  <li>• Modello non addestrato</li>
-                  <li>• Dati insufficienti</li>
+                  <li>• Genera un report per ottenere insights specifici</li>
+                  <li>• I dati saranno basati sul tuo modello addestrato</li>
+                  <li>• Le analisi saranno disponibili dopo la creazione</li>
                 </ul>
               )}
             </div>
             
             <div className="p-4 border rounded-lg">
               <h4 className="font-medium mb-2">Risk Factors</h4>
-              {hasData ? (
+              {hasReports ? (
                 <ul className="space-y-1 text-sm text-orange-600 dark:text-orange-300">
-                  <li>• Prezzi sopra €100K hanno rischio elevato</li>
-                  <li>• Sconti superiori al 25% ridurrebbero profitto</li>
-                  <li>• Tempi oltre 90 giorni diminuiscono interesse</li>
-                  <li>• Settore retail mostra maggiore volatilità</li>
+                  {latestReportInsights?.performance && (
+                    <>
+                      {latestReportInsights.performance.accuracy < 0.8 && (
+                        <li>• Accuracy del modello: {(latestReportInsights.performance.accuracy * 100).toFixed(1)}% - sotto target 80%</li>
+                      )}
+                      {latestReportInsights.performance.precision < 0.8 && (
+                        <li>• Precision: {(latestReportInsights.performance.precision * 100).toFixed(1)}% - falsi positivi elevati</li>
+                      )}
+                      {latestReportInsights.performance.recall < 0.7 && (
+                        <li>• Recall: {(latestReportInsights.performance.recall * 100).toFixed(1)}% - copertura insufficiente</li>
+                      )}
+                    </>
+                  )}
+                  {latestReportInsights?.recommendations?.strategic?.slice(0, 2).map((item: string, index: number) => (
+                    <li key={index}>• {item}</li>
+                  )) || [
+                    <li key="1">• Prezzi sopra €100K hanno rischio elevato</li>,
+                    <li key="2">• Sconti superiori al 25% ridurrebbero profitto</li>,
+                    <li key="3">• Tempi oltre 90 giorni diminuiscono interesse</li>,
+                    <li key="4">• Settore retail mostra maggiore volatilità</li>
+                  ]}
                 </ul>
               ) : (
                 <ul className="space-y-1 text-sm text-gray-600 dark:text-gray-300">
-                  <li>• Analisi non disponibile</li>
-                  <li>• Modello non addestrato</li>
-                  <li>• Dati insufficienti</li>
+                  <li>• Genera un report per identificare i rischi</li>
+                  <li>• L&apos;analisi sarà basata sul tuo modello specifico</li>
+                  <li>• I fattori di rischio saranno calcolati dai dati</li>
                 </ul>
               )}
             </div>
             
             <div className="p-4 border rounded-lg">
               <h4 className="font-medium mb-2">Optimal Ranges</h4>
-              {hasData ? (
+              {hasReports ? (
                 <ul className="space-y-1 text-sm text-blue-600 dark:text-blue-300">
-                  <li>• Prezzo ottimale: €15K-€40K</li>
-                  <li>• Sconto ideale: 5-15%</li>
-                  <li>• Consegna ideale: 15-30 giorni</li>
-                  <li>• Focus su clienti medium/large</li>
+                  {latestReportInsights?.keyMetrics ? (
+                    <>
+                      <li>• Performance Score: {latestReportInsights.keyMetrics.performanceScore || 'N/A'}/100</li>
+                      <li>• Average Win Probability: {((latestReportInsights.keyMetrics.averageWinProbability || 0) * 100).toFixed(1)}%</li>
+                      <li>• Top Performing Sector: {latestReportInsights.keyMetrics.topPerformingSector || 'N/A'}</li>
+                      <li>• Optimal Price Range: {latestReportInsights.keyMetrics.optimalPriceRange || 'N/A'}</li>
+                    </>
+                  ) : (
+                    <>
+                      <li>• Prezzo ottimale: €15K-€40K</li>
+                      <li>• Sconto ideale: 5-15%</li>
+                      <li>• Consegna ideale: 15-30 giorni</li>
+                      <li>• Focus su clienti medium/large</li>
+                    </>
+                  )}
                 </ul>
               ) : (
                 <ul className="space-y-1 text-sm text-gray-600 dark:text-gray-300">
-                  <li>• Analisi non disponibile</li>
-                  <li>• Modello non addestrato</li>
-                  <li>• Dati insufficienti</li>
+                  <li>• Genera un report per scoprire i range ottimali</li>
+                  <li>• I dati saranno calcolati dal tuo modello</li>
+                  <li>• Le raccomandazioni saranno specifiche per i tuoi dati</li>
                 </ul>
               )}
             </div>
@@ -630,18 +686,22 @@ export default function ReportsPage() {
             <div className="flex items-start gap-3 p-4 border rounded-lg">
               <div className="w-2 h-2 bg-blue-500 rounded-full mt-2 flex-shrink-0"></div>
               <div>
-                <h4 className="font-medium">Short-term Wins</h4>
+                <h4 className="font-medium">Azioni Immediate</h4>
                 <p className="text-sm text-gray-600 dark:text-gray-300">
-                  Azioni immediate che possono migliorare le performance
+                  Raccomandazioni basate sull&apos;ultimo report generato
                 </p>
-                {hasData ? (
+                {hasReports ? (
                   <ul className="text-xs text-blue-600 dark:text-blue-400 mt-1 space-y-1">
-                    <li>• Riduci sconti per preventivi sopra €50K</li>
-                    <li>• Ottimizza tempi di consegna sotto 30 giorni</li>
-                    <li>• Focalizza su clienti tecnologia e servizi</li>
+                    {latestReportInsights?.recommendations?.immediate?.slice(0, 3).map((item: string, index: number) => (
+                      <li key={index}>• {item}</li>
+                    )) || [
+                      <li key="1">• Riduci sconti per preventivi sopra €50K</li>,
+                      <li key="2">• Ottimizza tempi di consegna sotto 30 giorni</li>,
+                      <li key="3">• Focalizza su clienti tecnologia e servizi</li>
+                    ]}
                   </ul>
                 ) : (
-                  <p className="text-xs text-gray-500 mt-1">Non disponibile - richiede dati</p>
+                  <p className="text-xs text-gray-500 mt-1">Genera un report per ottenere raccomandazioni specifiche</p>
                 )}
               </div>
             </div>
@@ -649,18 +709,22 @@ export default function ReportsPage() {
             <div className="flex items-start gap-3 p-4 border rounded-lg">
               <div className="w-2 h-2 bg-purple-500 rounded-full mt-2 flex-shrink-0"></div>
               <div>
-                <h4 className="font-medium">Medium-term Strategy</h4>
+                <h4 className="font-medium">Strategia a Medio Termine</h4>
                 <p className="text-sm text-gray-600 dark:text-gray-300">
                   Iniziative strategiche per miglioramenti sostenibili
                 </p>
-                {hasData ? (
+                {hasReports ? (
                   <ul className="text-xs text-purple-600 dark:text-purple-400 mt-1 space-y-1">
-                    <li>• Sviluppa strategie di prezzo per fasce</li>
-                    <li>• Implementa processo di validazione preventivi</li>
-                    <li>• Allarga focus su settori ad alta performance</li>
+                    {latestReportInsights?.recommendations?.strategic?.slice(0, 3).map((item: string, index: number) => (
+                      <li key={index}>• {item}</li>
+                    )) || [
+                      <li key="1">• Sviluppa strategie di prezzo per fasce</li>,
+                      <li key="2">• Implementa processo di validazione preventivi</li>,
+                      <li key="3">• Allarga focus su settori ad alta performance</li>
+                    ]}
                   </ul>
                 ) : (
-                  <p className="text-xs text-gray-500 mt-1">Non disponibile - richiede dati</p>
+                  <p className="text-xs text-gray-500 mt-1">Genera un report per la strategia a medio termine</p>
                 )}
               </div>
             </div>
@@ -668,18 +732,22 @@ export default function ReportsPage() {
             <div className="flex items-start gap-3 p-4 border rounded-lg">
               <div className="w-2 h-2 bg-green-500 rounded-full mt-2 flex-shrink-0"></div>
               <div>
-                <h4 className="font-medium">Long-term Goals</h4>
+                <h4 className="font-medium">Obiettivi a Lungo Termine</h4>
                 <p className="text-sm text-gray-600 dark:text-gray-300">
-                  Obiettivi a lungo termine per la crescita
+                  Visione e obiettivi per la crescita futura
                 </p>
-                {hasData ? (
+                {hasReports ? (
                   <ul className="text-xs text-green-600 dark:text-green-400 mt-1 space-y-1">
-                    <li>• Raggiungi tasso di successo del 85%+</li>
-                    <li>• Espandi a nuovi settori merceologici</li>
-                    <li>• Sviluppa modelli predittivi avanzati</li>
+                    {latestReportInsights?.recommendations?.longTerm?.slice(0, 3).map((item: string, index: number) => (
+                      <li key={index}>• {item}</li>
+                    )) || [
+                      <li key="1">• Raggiungi tasso di successo del 85%+</li>,
+                      <li key="2">• Espandi a nuovi settori merceologici</li>,
+                      <li key="3">• Sviluppa modelli predittivi avanzati</li>
+                    ]}
                   </ul>
                 ) : (
-                  <p className="text-xs text-gray-500 mt-1">Non disponibile - richiede dati</p>
+                  <p className="text-xs text-gray-500 mt-1">Genera un report per gli obiettivi a lungo termine</p>
                 )}
               </div>
             </div>

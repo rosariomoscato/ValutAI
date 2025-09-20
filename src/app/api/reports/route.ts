@@ -52,12 +52,12 @@ export async function POST(request: NextRequest) {
     }
 
     // Check if user has enough credits for report generation (50 credits per report)
-    const reportCost = await CreditsService.getOperationCost('report');
+    const reportCost = await CreditsService.getOperationCost('report_generation');
     if (reportCost === null) {
       // Try to initialize default operations if they don't exist
       try {
         await CreditsService.initializeDefaultOperations();
-        const retryCost = await CreditsService.getOperationCost('report');
+        const retryCost = await CreditsService.getOperationCost('report_generation');
         if (retryCost === null) {
           return NextResponse.json({ 
             error: 'Sistema crediti non disponibile',
@@ -186,7 +186,7 @@ export async function POST(request: NextRequest) {
       session.user.id, 
       reportCost || 50, 
       `Report generation for model ${modelId}`,
-      'report',
+      'report_generation',
       reportResult[0].id
     );
 
