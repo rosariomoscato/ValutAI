@@ -8,6 +8,7 @@ export const user = pgTable("user", {
   emailVerified: boolean("emailVerified"),
   image: text("image"),
   role: text("role").default("viewer").notNull(), // owner, analyst, viewer
+  isAdmin: boolean("isAdmin").default(false).notNull(), // Admin flag for user management
   credits: integer("credits").default(0).notNull(), // Starting credits for new users (0 + 100 welcome bonus)
   stripeCustomerId: text("stripeCustomerId"),
   stripeSubscriptionId: text("stripeSubscriptionId"),

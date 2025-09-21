@@ -29,6 +29,13 @@
       "when": 1758395235485,
       "tag": "0003_strange_goblin_queen",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1758456402872,
+      "tag": "0004_breezy_molly_hayes",
+      "breakpoints": true
     }
   ]
 }

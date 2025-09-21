@@ -16,7 +16,8 @@ import {
   Settings,
   Menu,
   X,
-  Coins
+  Coins,
+  Shield
 } from "lucide-react";
 import { useState, useCallback, useEffect } from "react";
 
@@ -39,13 +40,45 @@ const authenticatedNavigation = [
   { name: "Impostazioni", href: "/settings", icon: Settings },
 ];
 
+const adminNavigation = [
+  { name: "Dashboard", href: "/dashboard", icon: TrendingUp },
+  { name: "Dati", href: "/data", icon: FileSpreadsheet },
+  { name: "Modello", href: "/model", icon: Brain },
+  { name: "Scoring", href: "/scoring", icon: Target },
+  { name: "Report", href: "/reports", icon: BarChart3 },
+  { name: "Crediti", href: "/credits", icon: Coins },
+  { name: "Admin", href: "/admin", icon: Shield },
+  { name: "Impostazioni", href: "/settings", icon: Settings },
+];
+
 export function SiteHeader() {
   const pathname = usePathname();
   const { data: session } = useSession();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(false);
 
-  // Choose navigation based on authentication status
-  const navigation = session ? authenticatedNavigation : publicNavigation;
+  // Check if user is admin
+  useEffect(() => {
+    const checkAdmin = async () => {
+      if (session?.user?.id) {
+        try {
+          const response = await fetch(`/api/admin/check-admin/${session.user.id}`);
+          const data = await response.json();
+          setIsAdmin(data.isAdmin || false);
+        } catch (error) {
+          console.error('Error checking admin status:', error);
+          setIsAdmin(false);
+        }
+      } else {
+        setIsAdmin(false);
+      }
+    };
+
+    checkAdmin();
+  }, [session]);
+
+  // Choose navigation based on authentication and admin status
+  const navigation = session ? (isAdmin ? adminNavigation : authenticatedNavigation) : publicNavigation;
 
   const closeMobileMenu = useCallback(() => {
     setMobileMenuOpen(false);

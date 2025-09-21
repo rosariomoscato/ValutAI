@@ -32,7 +32,10 @@
       "Bash(npx drizzle-kit studio:dump:*)",
       "Bash(npx drizzle-kit migrate:*)",
       "Bash(npx drizzle-kit studio:*)",
-      "Bash(npx tsx:*)"
+      "Bash(npx tsx:*)",
+      "Bash(npm run types:check:*)",
+      "Bash(npm run type-check:*)",
+      "Bash(bun run:*)"
     ],
     "additionalDirectories": [
       "C:\\c\\Projects\\nextjs-better-auth-postgresql-starter-kit"
