@@ -3,6 +3,7 @@ import { db } from '@/lib/db';
 import { user, creditTransaction, dataset, model, prediction, report } from '@/lib/schema';
 import { eq, and, desc, sql, gte, lt, count } from 'drizzle-orm';
 import { withAdminAuth } from '@/lib/admin-middleware';
+import { CreditsService } from '@/lib/credits';
 
 export async function GET(
   request: NextRequest,
@@ -156,6 +157,110 @@ export async function GET(
     });
   } catch (error) {
     console.error('Error fetching user details:', error);
+    return NextResponse.json(
+      { error: 'Internal server error' },
+      { status: 500 }
+    );
+  }
+}
+
+export async function PUT(
+  request: NextRequest,
+  { params }: { params: Promise<{ userId: string }> }
+) {
+  try {
+    // Check admin authorization
+    const authError = await withAdminAuth(request);
+    if (authError) {
+      return authError;
+    }
+
+    const { userId } = await params;
+    const body = await request.json();
+    const { credits } = body;
+
+    if (typeof credits !== 'number' || credits < 0) {
+      return NextResponse.json(
+        { error: 'Credits must be a positive number' },
+        { status: 400 }
+      );
+    }
+
+    // Get current user credits
+    const currentCredits = await CreditsService.getUserCredits(userId);
+    
+    // Calculate the difference
+    const creditDifference = credits - currentCredits;
+    
+    if (creditDifference === 0) {
+      return NextResponse.json({
+        message: 'Credits already at requested amount',
+        userId,
+        credits: currentCredits,
+      });
+    }
+
+    let success: boolean;
+    let description: string;
+
+    if (creditDifference > 0) {
+      // Add credits
+      success = await CreditsService.addCredits(
+        userId,
+        creditDifference,
+        `Admin credit adjustment: Added ${creditDifference} credits`,
+        'bonus',
+        'admin_adjustment'
+      );
+      description = `Added ${creditDifference} credits`;
+    } else {
+      // Remove credits (only if user has enough)
+      const amountToRemove = Math.abs(creditDifference);
+      success = await CreditsService.deductCredits(
+        userId,
+        amountToRemove,
+        `Admin credit adjustment: Removed ${amountToRemove} credits`,
+        'admin_adjustment'
+      );
+      description = `Removed ${amountToRemove} credits`;
+    }
+
+    if (!success) {
+      return NextResponse.json(
+        { error: 'Failed to update credits' },
+        { status: 500 }
+      );
+    }
+
+    // Get updated user info
+    const updatedUser = await db
+      .select({
+        id: user.id,
+        name: user.name,
+        email: user.email,
+        credits: user.credits,
+      })
+      .from(user)
+      .where(eq(user.id, userId))
+      .limit(1);
+
+    if (updatedUser.length === 0) {
+      return NextResponse.json(
+        { error: 'User not found after update' },
+        { status: 404 }
+      );
+    }
+
+    return NextResponse.json({
+      message: `Credits updated successfully: ${description}`,
+      userId,
+      credits: updatedUser[0].credits,
+      previousCredits: currentCredits,
+      adjustment: creditDifference,
+    });
+
+  } catch (error) {
+    console.error('Error updating user credits:', error);
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }

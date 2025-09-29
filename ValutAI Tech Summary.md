@@ -1,93 +1,93 @@
-# ValutAI Technical Architecture Summary
+# Riepilogo dell'Architettura Tecnica di ValutAI
 
-## Table of Contents
-1. [Executive Overview](#executive-overview)
-2. [High-Level Architecture](#high-level-architecture)
-3. [Frontend Architecture](#frontend-architecture)
-4. [Backend Architecture](#backend-architecture)
-5. [Database Architecture](#database-architecture)
-6. [Authentication & Security](#authentication--security)
-7. [Machine Learning Pipeline](#machine-learning-pipeline)
-8. [Credit System](#credit-system)
-9. [Admin System](#admin-system)
-10. [Deployment & Infrastructure](#deployment--infrastructure)
-11. [Performance & Scalability](#performance--scalability)
-12. [Monitoring & Observability](#monitoring--observability)
-
----
-
-## Executive Overview
-
-ValutAI is built on a modern, scalable technology stack designed for high performance, security, and maintainability. The architecture follows clean code principles with clear separation of concerns between frontend, backend, and database layers.
-
-### Key Design Principles
-- **Modularity**: Each component is designed to be independently deployable and testable
-- **Security**: Security-first approach with proper authentication and authorization
-- **Scalability**: Built to handle increasing user loads and data volumes
-- **Maintainability**: Clean code patterns and comprehensive testing
-- **Performance**: Optimized for real-time ML predictions and data processing
+## Indice
+1. [Panoramica Generale](#panoramica-generale)
+2. [Architettura di Alto Livello](#architettura-di-alto-livello)
+3. [Architettura Frontend](#architettura-frontend)
+4. [Architettura Backend](#architettura-backend)
+5. [Architettura Database](#architettura-database)
+6. [Autenticazione e Sicurezza](#autenticazione-e-sicurezza)
+7. [Pipeline di Machine Learning](#pipeline-di-machine-learning)
+8. [Sistema di Crediti](#sistema-di-crediti)
+9. [Sistema Admin](#sistema-admin)
+10. [Deploy e Infrastruttura](#deploy-e-infrastruttura)
+11. [Performance e Scalabilità](#performance-e-scalabilità)
+12. [Monitoraggio e Osservabilità](#monitoraggio-e-osservabilità)
 
 ---
 
-## High-Level Architecture
+## Panoramica Generale
+
+ValutAI è costruito su uno stack tecnologico moderno e scalabile, progettato per alte performance, sicurezza e manutenibilità. L'architettura segue principi di codice pulito con chiara separazione delle responsabilità tra gli strati frontend, backend e database.
+
+### Principi di Progettazione Chiave
+- **Modularità**: Ogni componente è progettato per essere distribuibile e testabile indipendentemente
+- **Sicurezza**: Approccio security-first con autenticazione e autorizzazione appropriate
+- **Scalabilità**: Costruito per gestire carichi utente crescenti e volumi di dati
+- **Manutenibilità**: Pattern di codice pulito e test completi
+- **Performance**: Ottimizzato per previsioni ML in tempo reale ed elaborazione dati
+
+---
+
+## Architettura di Alto Livello
 
 ```mermaid
 graph TB
-    subgraph "Frontend Layer"
+    subgraph "Strato Frontend"
         UI[Next.js 15 App Router]
-        UI --> Auth[Better Auth Client]
-        UI --> API[API Calls]
+        UI --> Auth[Client Better Auth]
+        UI --> API[Chiamate API]
     end
     
-    subgraph "Backend Layer"
-        API --> Router[Next.js API Routes]
-        Router --> AuthServer[Better Auth Server]
-        Router --> Services[Business Logic Services]
-        Router --> ML[ML Prediction Service]
+    subgraph "Strato Backend"
+        API --> Router[Route API Next.js]
+        Router --> AuthServer[Server Better Auth]
+        Router --> Services[Servizi Logica Business]
+        Router --> ML[Servizio Previsioni ML]
         
-        Services --> DB[Database Layer]
+        Services --> DB[Strato Database]
         ML --> DB
     end
     
-    subgraph "Data Layer"
-        DB --> PostgreSQL[(PostgreSQL Database)]
+    subgraph "Strato Dati"
+        DB --> PostgreSQL[(Database PostgreSQL)]
         DB --> Drizzle[Drizzle ORM]
     end
     
-    subgraph "External Services"
-        Stripe[Stripe API]
+    subgraph "Servizi Esterni"
+        Stripe[API Stripe]
     end
     
     Services --> Stripe
 ```
 
-### Architecture Flow
-1. **Client Interaction**: Users interact with the Next.js frontend
-2. **Authentication**: Better Auth handles user authentication
-3. **API Gateway**: Next.js API Routes serve as the entry point
-4. **Business Logic**: Services handle core business operations
-5. **Data Access**: Drizzle ORM manages database interactions
-6. **ML Processing**: Machine learning models provide predictions
-7. **External Integration**: Stripe handles payment processing
+### Flusso dell'Architettura
+1. **Interazione Client**: Gli utenti interagiscono con il frontend Next.js
+2. **Autenticazione**: Better Auth gestisce l'autenticazione degli utenti
+3. **Gateway API**: Le Route API Next.js servono come punto di ingresso
+4. **Logica Business**: I servizi gestiscono le operazioni business core
+5. **Accesso Dati**: Drizzle ORM gestisce le interazioni con il database
+6. **Elaborazione ML**: I modelli di machine learning forniscono previsioni
+7. **Integrazione Esterna**: Stripe gestisce l'elaborazione dei pagamenti
 
 ---
 
-## Frontend Architecture
+## Architettura Frontend
 
-### Technology Stack
-- **Framework**: Next.js 15 with App Router
-- **Language**: TypeScript
+### Stack Tecnologico
+- **Framework**: Next.js 15 con App Router
+- **Linguaggio**: TypeScript
 - **Styling**: Tailwind CSS
-- **UI Components**: Shadcn/ui
-- **Authentication**: Better Auth
-- **State Management**: React Hooks + Context API
-- **Charts**: Recharts (for future implementation)
+- **Componenti UI**: Shadcn/ui
+- **Autenticazione**: Better Auth
+- **Gestione Stato**: React Hooks + Context API
+- **Grafici**: Recharts (per implementazione futura)
 
-### Component Structure
+### Struttura dei Componenti
 
 ```mermaid
 graph TD
-    subgraph "Pages"
+    subgraph "Pagine"
         A[app/page.tsx]
         B[app/dashboard/page.tsx]
         C[app/data/page.tsx]
@@ -98,7 +98,7 @@ graph TD
         H[app/admin/page.tsx]
     end
     
-    subgraph "Components"
+    subgraph "Componenti"
         UI[components/ui/]
         Site[components/site-]
         Forms[components/forms/]
@@ -113,38 +113,38 @@ graph TD
     
     Layout --> Header
     Layout --> Footer
-    Pages --> UI
-    Pages --> Site
-    Pages --> Forms
-    Pages --> Charts
+    Pagine --> UI
+    Pagine --> Site
+    Pagine --> Forms
+    Pagine --> Charts
 ```
 
-### Key Frontend Features
-- **Server-Side Rendering**: Optimized for SEO and performance
-- **Type Safety**: Full TypeScript implementation
-- **Responsive Design**: Mobile-first approach
-- **Authentication Flow**: Integrated Better Auth authentication
-- **Real-time Updates**: Optimistic UI updates
-- **Error Handling**: Comprehensive error boundaries
+### Funzionalità Frontend Chiave
+- **Server-Side Rendering**: Ottimizzato per SEO e performance
+- **Type Safety**: Implementazione TypeScript completa
+- **Design Responsivo**: Approccio mobile-first
+- **Flusso Autenticazione**: Autenticazione Better Auth integrata
+- **Aggiornamenti Real-time**: Aggiornamenti UI ottimistici
+- **Gestione Errori**: Error boundaries completi
 
 ---
 
-## Backend Architecture
+## Architettura Backend
 
-### Technology Stack
-- **Framework**: Next.js 15 API Routes
-- **Language**: TypeScript
+### Stack Tecnologico
+- **Framework**: Route API Next.js 15
+- **Linguaggio**: TypeScript
 - **Runtime**: Node.js
-- **Authentication**: Better Auth
-- **Database**: PostgreSQL with Drizzle ORM
-- **File Upload**: Native Next.js file handling
-- **ML Processing**: Python integration (future)
+- **Autenticazione**: Better Auth
+- **Database**: PostgreSQL con Drizzle ORM
+- **Caricamento File**: Gestione file nativa Next.js
+- **Elaborazione ML**: Integrazione Python (futuro)
 
-### API Structure
+### Struttura API
 
 ```mermaid
 graph TD
-    subgraph "API Routes"
+    subgraph "Route API"
         AuthAPI[app/api/auth/]
         UploadAPI[app/api/upload/]
         PredictionsAPI[app/api/predictions/]
@@ -153,7 +153,7 @@ graph TD
         AdminAPI[app/api/admin/]
     end
     
-    subgraph "Services"
+    subgraph "Servizi"
         AuthService[/lib/auth.ts]
         CreditsService[/lib/credits.ts]
         AdminService[/lib/admin-middleware.ts]
@@ -166,22 +166,22 @@ graph TD
         Queries[/lib/db.ts]
     end
     
-    API Routes --> Services
+    Route API --> Services
     Services --> Database
 ```
 
-### Key Backend Patterns
-- **Middleware Pattern**: Authentication and authorization middleware
-- **Service Layer**: Business logic separated from API routes
-- **Repository Pattern**: Data access abstraction
-- **Error Handling**: Centralized error management
-- **Validation**: Input validation at multiple layers
+### Pattern Backend Chiave
+- **Pattern Middleware**: Middleware autenticazione e autorizzazione
+- **Strato Servizi**: Logica business separata dalle route API
+- **Pattern Repository**: Astrazione accesso dati
+- **Gestione Errori**: Gestione errori centralizzata
+- **Validazione**: Validazione input a più livelli
 
 ---
 
-## Database Architecture
+## Architettura Database
 
-### Schema Design
+### Design Schema
 
 ```mermaid
 erDiagram
@@ -314,122 +314,122 @@ erDiagram
         timestamp updatedAt
     }
     
-    USER ||--o{ SESSION : "has"
-    USER ||--o{ DATASET : "uploads"
-    USER ||--o{ MODEL : "creates"
-    USER ||--o{ CREDIT_TRANSACTION : "performs"
-    DATASET ||--o{ MODEL : "used for"
-    MODEL ||--o{ PREDICTION : "generates"
-    MODEL ||--o{ REPORT : "produces"
+    USER ||--o{ SESSION : "ha"
+    USER ||--o{ DATASET : "carica"
+    USER ||--o{ MODEL : "crea"
+    USER ||--o{ CREDIT_TRANSACTION : "esegue"
+    DATASET ||--o{ MODEL : "usato per"
+    MODEL ||--o{ PREDICTION : "genera"
+    MODEL ||--o{ REPORT : "produce"
 ```
 
-### Database Features
-- **Relational Design**: Proper foreign key relationships
-- **JSONB Support**: Flexible storage for complex data structures
-- **Indexing Strategy**: Optimized for query performance
-- **Migration Management**: Drizzle migration system
-- **Data Integrity**: Constraints and validations
+### Funzionalità Database
+- **Design Relazionale**: Relazioni foreign key appropriate
+- **Supporto JSONB**: Storage flessibile per strutture dati complesse
+- **Strategia Indicizzazione**: Ottimizzata per performance query
+- **Gestione Migrazioni**: Sistema migrazioni Drizzle
+- **Integrità Dati**: Vincoli e validazioni
 
 ---
 
-## Authentication & Security
+## Autenticazione e Sicurezza
 
-### Authentication Flow
+### Flusso Autenticazione
 
 ```mermaid
 sequenceDiagram
-    participant U as User
+    participant U as Utente
     participant F as Frontend
-    participant A as Better Auth Client
-    participant S as Better Auth Server
+    participant A as Client Better Auth
+    participant S as Server Better Auth
     participant DB as Database
     
-    U->>F: Login Request
+    U->>F: Richiesta Login
     F->>A: initiateAuth()
-    A->>S: Authentication Request
-    S->>DB: Verify Credentials
-    DB-->>S: User Data
-    S-->>A: Session Token
-    A-->>F: Session Data
-    F-->>U: Login Success
+    A->>S: Richiesta Autenticazione
+    S->>DB: Verifica Credenziali
+    DB-->>S: Dati Utente
+    S-->>A: Token Sessione
+    A-->>F: Dati Sessione
+    F-->>U: Login Successo
 ```
 
-### Security Measures
-- **Password Hashing**: Secure password storage
-- **JWT Tokens**: Stateless session management
-- **Rate Limiting**: API endpoint protection
-- **CORS Configuration**: Proper cross-origin resource sharing
-- **Input Validation**: SQL injection and XSS prevention
-- **Environment Variables**: Secure configuration management
+### Misure di Sicurezza
+- **Hashing Password**: Storage password sicuro
+- **Token JWT**: Gestione sessione stateless
+- **Rate Limiting**: Protezione endpoint API
+- **Configurazione CORS**: Condivisione risorse cross-origin appropriata
+- **Validazione Input**: Prevenzione SQL injection e XSS
+- **Variabili Ambiente**: Gestione configurazione sicura
 
 ---
 
-## Machine Learning Pipeline
+## Pipeline di Machine Learning
 
-### ML Architecture
+### Architettura ML
 
 ```mermaid
 graph TD
-    subgraph "Data Processing"
-        A[Data Upload]
-        B[Validation]
+    subgraph "Elaborazione Dati"
+        A[Caricamento Dati]
+        B[Validazione]
         C[Preprocessing]
         D[Feature Engineering]
     end
     
-    subgraph "Model Training"
-        E[Algorithm Selection]
-        F[Training]
-        G[Validation]
-        H[Evaluation]
+    subgraph "Addestramento Modello"
+        E[Selezione Algoritmo]
+        F[Addestramento]
+        G[Validazione]
+        H[Valutazione]
     end
     
-    subgraph "Prediction"
-        I[Real-time Scoring]
-        J[Feature Analysis]
-        K[Confidence Calculation]
-        L[Recommendations]
+    subgraph "Previsione"
+        I[Scoring Real-time]
+        J[Analisi Feature]
+        K[Calcolo Confidenza]
+        L[Raccomandazioni]
     end
     
     A --> B --> C --> D --> E --> F --> G --> H
     H --> I --> J --> K --> L
 ```
 
-### ML Components
-- **Data Preprocessing**: Cleaning and normalization
-- **Feature Engineering**: Automatic feature extraction
-- **Model Training**: Multiple algorithm support
-- **Model Evaluation**: Comprehensive metrics
-- **Prediction API**: Real-time scoring
-- **Model Monitoring**: Performance tracking
+### Componenti ML
+- **Preprocessing Dati**: Pulizia e normalizzazione
+- **Feature Engineering**: Estrazione feature automatica
+- **Addestramento Modello**: Supporto algoritmi multipli
+- **Valutazione Modello**: Metriche complete
+- **API Previsione**: Scoring real-time
+- **Monitoraggio Modello**: Tracciamento performance
 
 ---
 
-## Credit System
+## Sistema di Crediti
 
-### Credit Flow
+### Flusso Crediti
 
 ```mermaid
 graph TD
-    subgraph "Credit Management"
-        A[Credit Packages]
-        B[Purchase Flow]
-        C[Credit Balance]
-        D[Usage Tracking]
+    subgraph "Gestione Crediti"
+        A[Pacchetti Crediti]
+        B[Flusso Acquisto]
+        C[Saldo Crediti]
+        D[Tracciamento Utilizzo]
     end
     
-    subgraph "Operations"
-        E[Dataset Upload]
-        F[Model Training]
-        G[Prediction]
-        H[Report Generation]
+    subgraph "Operazioni"
+        E[Caricamento Dataset]
+        F[Addestramento Modello]
+        G[Previsione]
+        H[Generazione Report]
     end
     
-    subgraph "Transactions"
-        I[Credit Debit]
-        J[Credit Credit]
-        K[Transaction History]
-        L[Balance Update]
+    subgraph "Transazioni"
+        I[Addebito Crediti]
+        J[Accredito Crediti]
+        K[Cronologia Transazioni]
+        L[Aggiornamento Saldo]
     end
     
     A --> B --> C --> D
@@ -441,40 +441,40 @@ graph TD
     B --> J --> L
 ```
 
-### Credit System Features
-- **Package Management**: Flexible credit packages
-- **Real-time Balance**: Live credit tracking
-- **Usage Analytics**: Detailed consumption reports
-- **Automated Deductions**: Credit consumption based on operations
-- **Stripe Integration**: Secure payment processing
+### Funzionalità Sistema Crediti
+- **Gestione Pacchetti**: Pacchetti crediti flessibili
+- **Saldo Real-time**: Tracciamento crediti live
+- **Analytics Utilizzo**: Report consumo dettagliati
+- **Addebiti Automatici**: Consumo crediti basato su operazioni
+- **Integrazione Stripe**: Elaborazione pagamenti sicura
 
 ---
 
-## Admin System
+## Sistema Admin
 
-### Admin Architecture
+### Architettura Admin
 
 ```mermaid
 graph TD
-    subgraph "Admin Components"
-        A[Admin Dashboard]
-        B[User Management]
-        C[System Statistics]
-        D[Audit Logs]
-        E[Credit Management]
+    subgraph "Componenti Admin"
+        A[Dashboard Admin]
+        B[Gestione Utenti]
+        C[Statistiche Sistema]
+        D[Log Audit]
+        E[Gestione Crediti]
     end
     
-    subgraph "Admin API"
-        F[Admin Middleware]
-        G[User API]
-        H[Stats API]
-        I[Audit API]
+    subgraph "API Admin"
+        F[Middleware Admin]
+        G[API Utenti]
+        H[API Statistiche]
+        I[API Audit]
     end
     
     subgraph "Database"
-        J[Admin Queries]
-        K[Analytics Queries]
-        L[System Metrics]
+        J[Query Admin]
+        K[Query Analytics]
+        L[Metriche Sistema]
     end
     
     A --> F
@@ -487,38 +487,38 @@ graph TD
     I --> L
 ```
 
-### Admin Features
-- **Role-based Access**: Admin-only functionality
-- **User Management**: View and manage user accounts
-- **System Monitoring**: Real-time system statistics
-- **Credit Administration**: Manage credit packages and transactions
-- **Audit Trail**: Comprehensive activity logging
+### Funzionalità Admin
+- **Accesso Basato su Ruoli**: Funzionalità solo admin
+- **Gestione Utenti**: Visualizza e gestisci account utente
+- **Monitoraggio Sistema**: Statistiche sistema real-time
+- **Amministrazione Crediti**: Gestisci pacchetti crediti e transazioni
+- **Audit Trail**: Logging attività completo
 
 ---
 
-## Deployment & Infrastructure
+## Deploy e Infrastruttura
 
-### Deployment Architecture
+### Architettura Deploy
 
 ```mermaid
 graph TD
-    subgraph "Production Environment"
+    subgraph "Ambiente Produzione"
         A[Load Balancer]
-        B[Application Servers]
-        C[Database Server]
-        D[File Storage]
+        B[Server Applicazione]
+        C[Server Database]
+        D[Storage File]
     end
     
-    subgraph "Development"
-        E[Local Development]
-        F[Testing Environment]
-        G[Staging Environment]
+    subgraph "Sviluppo"
+        E[Sviluppo Locale]
+        F[Ambiente Testing]
+        G[Ambiente Staging]
     end
     
     subgraph "CI/CD"
         H[GitHub Actions]
         I[Docker]
-        J[Cloud Deployment]
+        J[Deploy Cloud]
     end
     
     A --> B --> C
@@ -527,40 +527,40 @@ graph TD
     H --> I --> J
 ```
 
-### Infrastructure Stack
+### Stack Infrastruttura
 - **Hosting**: Vercel (frontend) / AWS (backend)
-- **Database**: PostgreSQL (managed service)
-- **File Storage**: Cloud storage solution
-- **CDN**: Global content delivery
-- **Monitoring**: Application performance monitoring
+- **Database**: PostgreSQL (servizio gestito)
+- **Storage File**: Soluzione storage cloud
+- **CDN**: Distribuzione contenuti globale
+- **Monitoraggio**: Monitoraggio performance applicazione
 
 ---
 
-## Performance & Scalability
+## Performance e Scalabilità
 
-### Performance Optimization
+### Ottimizzazione Performance
 
 ```mermaid
 graph TD
-    subgraph "Frontend Optimization"
+    subgraph "Ottimizzazione Frontend"
         A[Code Splitting]
         B[Lazy Loading]
         C[Caching]
-        D[Image Optimization]
+        D[Ottimizzazione Immagini]
     end
     
-    subgraph "Backend Optimization"
-        E[Database Indexing]
-        F[Query Optimization]
+    subgraph "Ottimizzazione Backend"
+        E[Indicizzazione Database]
+        F[Ottimizzazione Query]
         G[Connection Pooling]
-        H[API Response Caching]
+        H[Caching Risposte API]
     end
     
-    subgraph "Scalability"
-        I[Horizontal Scaling]
+    subgraph "Scalabilità"
+        I[Scaling Orizzontale]
         J[Load Balancing]
-        K[Database Scaling]
-        L[CDN Integration]
+        K[Scaling Database]
+        L[Integrazione CDN]
     end
     
     A --> E
@@ -570,40 +570,40 @@ graph TD
     I --> J --> K --> L
 ```
 
-### Performance Features
-- **Database Optimization**: Indexing and query optimization
-- **Caching Strategy**: Multi-layer caching approach
-- **Load Balancing**: Horizontal scaling capability
-- **CDN Integration**: Global content delivery
-- **Monitoring**: Real-time performance tracking
+### Funzionalità Performance
+- **Ottimizzazione Database**: Indicizzazione e ottimizzazione query
+- **Strategia Caching**: Approccio caching multi-livello
+- **Load Balancing**: Capacità scaling orizzontale
+- **Integrazione CDN**: Distribuzione contenuti globale
+- **Monitoraggio**: Tracciamento performance real-time
 
 ---
 
-## Monitoring & Observability
+## Monitoraggio e Osservabilità
 
-### Monitoring Architecture
+### Architettura Monitoraggio
 
 ```mermaid
 graph TD
-    subgraph "Monitoring Components"
-        A[Application Monitoring]
-        B[Database Monitoring]
-        C[User Activity Tracking]
-        D[Error Tracking]
-        E[Performance Metrics]
+    subgraph "Componenti Monitoraggio"
+        A[Monitoraggio Applicazione]
+        B[Monitoraggio Database]
+        C[Tracciamento Attività Utente]
+        D[Tracciamento Errori]
+        E[Metriche Performance]
     end
     
     subgraph "Alerting"
-        F[Error Alerts]
-        G[Performance Alerts]
-        H[Security Alerts]
-        I[Usage Alerts]
+        F[Alert Errori]
+        G[Alert Performance]
+        H[Alert Sicurezza]
+        I[Alert Utilizzo]
     end
     
     subgraph "Analytics"
-        J[Usage Analytics]
-        K[Performance Analytics]
-        L[Business Analytics]
+        J[Analytics Utilizzo]
+        K[Analytics Performance]
+        L[Analytics Business]
     end
     
     A --> F
@@ -616,19 +616,19 @@ graph TD
     H --> L
 ```
 
-### Monitoring Features
-- **Real-time Monitoring**: Application health tracking
-- **Error Tracking**: Comprehensive error logging
-- **Performance Metrics**: Response time and resource usage
-- **User Analytics**: Usage patterns and behavior
-- **Business Intelligence**: Revenue and growth metrics
+### Funzionalità Monitoraggio
+- **Monitoraggio Real-time**: Tracciamento salute applicazione
+- **Tracciamento Errori**: Logging errori completo
+- **Metriche Performance**: Tempo risposta e utilizzo risorse
+- **Analytics Utente**: Pattern e comportamento utilizzo
+- **Business Intelligence**: Metriche ricavo e crescita
 
 ---
 
-## Conclusion
+## Conclusione
 
-ValutAI's architecture is designed to be scalable, maintainable, and secure while providing excellent performance for ML-powered business intelligence. The technology stack leverages modern best practices and proven technologies to ensure reliability and future growth.
+L'architettura di ValutAI è progettata per essere scalabile, manutenibile e sicura fornendo al contempo eccellenti performance per l'intelligence business basata su ML. Lo stack tecnologico sfrutta best practice moderni e tecnologie provate per garantire affidabilità e crescita futura.
 
-The modular design allows for easy extension and modification, while the comprehensive monitoring and observability ensure system health and performance. The separation of concerns between frontend, backend, and database layers provides flexibility and maintainability.
+Il design modulare permette facile estensione e modifica, mentre il monitoraggio e l'osservabilità completi garantiscono salute e performance del sistema. La separazione delle responsabilità tra strati frontend, backend e database fornisce flessibilità e manutenibilità.
 
-This architecture supports the platform's mission to provide accessible, powerful ML capabilities to businesses of all sizes while maintaining the highest standards of security and performance.
+Questa architettura supporta la missione della piattaforma di fornire capacità ML accessibili e potenti a imprese di tutte le dimensioni mantenendo gli standard più alti di sicurezza e performance.
